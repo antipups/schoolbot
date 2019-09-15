@@ -128,22 +128,6 @@ def callback(obj):
         data.delete_teacher()
         bot.send_message(chat_id, 'Операция выполнена успешно.')
 
-    elif obj.data == 'cs':  # создание школы
-        msg = bot.send_message(chat_id, 'Введите id новой школы(3 символа):')
-        bot.register_next_step_handler(msg, create_school)
-
-    elif obj.data == 'cg':  # создание класса
-        msg = bot.send_message(chat_id, 'Введите id школы, в которой будет этот класс:')
-        bot.register_next_step_handler(msg, create_grade)
-
-    elif obj.data == 'cstud':   # создание студента
-        msg = bot.send_message(chat_id, 'Введите id класса, в который хотите добавить ученика:')
-        bot.register_next_step_handler(msg, pre_create_stud)
-
-    elif obj.data == 'steach':  # создание учителя
-        msg = bot.send_message(chat_id, 'Введите id школы, в которую добавить учителя:')
-        bot.register_next_step_handler(msg, pre_create_teach)
-
     elif obj.data == 'школа':
         msg = bot.send_message(chat_id, 'Введите id школы которую хотите отредактировать:')
         bot.register_next_step_handler(msg, pre_edit_school)
@@ -327,24 +311,10 @@ def admin(message):
     bot.register_next_step_handler(msg, admin_room)
 
 
-def admin_butt():   # клавиатурка админа
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Банер', callback_data='банер'),
-               types.InlineKeyboardButton(text='Текст', callback_data='текст'))
-    markup.add(types.InlineKeyboardButton(text='Школа', callback_data='школа'),
-               types.InlineKeyboardButton(text='Класс', callback_data='класс'))
-    markup.add(types.InlineKeyboardButton(text='Расписание', callback_data='смрасп'))
-    markup.add(types.InlineKeyboardButton(text='Учеников', callback_data='спуч'),
-               types.InlineKeyboardButton(text='Преподователей', callback_data='пркод'))
-    return markup
-
-
-def admin_butt2():   # клавиатурка админа на создание
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Школу', callback_data='cs'),
-               types.InlineKeyboardButton(text='Класс', callback_data='cg'))
-    markup.add(types.InlineKeyboardButton(text='Ученика', callback_data='cstud'),
-               types.InlineKeyboardButton(text='Учителя', callback_data='steach'))
+def choose():
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    markup.add(types.KeyboardButton(text='Создать'),
+               types.KeyboardButton(text='Редактировать'))
     return markup
 
 
@@ -353,13 +323,13 @@ def admin_room(message):
     if message.text.lower() == data.cancel_word:
         bot.send_message(chat_id, 'Операция отменена.')
         return
-    if message.text != data.dict_of_admins.get(chat_id):
+    if message.text != data.dict_of_admins.get(chat_id) and message.text != 'Назад в админ. меню':
         bot.send_message(message.from_user.id, 'Неверный пароль.\nВведите его заного или выйдите нажав кнопку *Отмена*:', reply_markup=cancel_key())
         return
     # если все успешно, то есть пароль ок,
     # то ты в комнате админа
 
-    bot.send_message(chat_id, 'Выберите какое действие вы хотите совершить:')
+    bot.send_message(chat_id, 'Выберите какое действие вы хотите совершить:', reply_markup=choose())
     # bot.send_message(chat_id, 'Редактировать:', reply_markup=admin_butt())
     # bot.send_message(chat_id, 'Создать:', reply_markup=admin_butt2())
 
@@ -685,7 +655,7 @@ def set_code(message):
         msg = bot.send_message(chat_id, 'Invite Url установлен, введите текст доски объявлений:')
         bot.register_next_step_handler(msg, set_desk)
     else:
-        msg = bot.send_message(chat_id, 'Введеный url не подходите, введите новый:')
+        msg = bot.send_message(chat_id, 'Введеный url не подходит, введите новый:')
         bot.register_next_step_handler(msg, set_code)
 
 
@@ -707,7 +677,7 @@ def pre_create_stud(message):
         bot.send_message(chat_id, 'Операция отменена.')
         return
     if data.get_grade(message.text) is not None:
-        msg = bot.send_message(chat_id, 'Введенная введите имя нового ученика:')
+        msg = bot.send_message(chat_id, 'Введите имя нового ученика:')
         bot.register_next_step_handler(msg, create_stud)
     else:
         msg = bot.send_message(chat_id, 'Введенного класса не сущесвует, попробуйте заного:')
@@ -902,6 +872,29 @@ def set_desk2(message):
         bot.register_next_step_handler(msg, set_desk)
 
 
+def admin_butt():   # клавиатурка админа
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton(text='Банер', callback_data='банер'),
+               types.InlineKeyboardButton(text='Текст', callback_data='текст'))
+    markup.add(types.InlineKeyboardButton(text='Школа', callback_data='школа'),
+               types.InlineKeyboardButton(text='Класс', callback_data='класс'))
+    markup.add(types.InlineKeyboardButton(text='Расписание', callback_data='смрасп'))
+    markup.add(types.InlineKeyboardButton(text='Учеников', callback_data='спуч'),
+               types.InlineKeyboardButton(text='Преподователей', callback_data='пркод'))
+    return markup
+
+
+def create_admin():   # клавиатурка админа на создание
+    markup = types.ReplyKeyboardMarkup()
+    markup.add(types.KeyboardButton(text='Школу'),
+               types.KeyboardButton(text='Класс'))
+    markup.add(types.KeyboardButton(text='Ученика'),
+               types.KeyboardButton(text='Учителя'))
+    markup.add(types.KeyboardButton(text='Отмена'),
+               types.KeyboardButton(text='Назад в админ. меню'))
+    return markup
+
+
 @bot.message_handler(content_types=['text'])
 def text(message):
     chat_id = message.from_user.id
@@ -912,19 +905,47 @@ def text(message):
     if text == 'Расписание на завтра':
         timetable = data.get_timetable_on_tomorrow()
         bot.send_message(chat_id, timetable)
+
     elif text == 'Расписание по дням':
         bot.send_message(chat_id, data.get_all_timetable())
+
     elif text == 'Доска объявлений':
         bot.send_message(chat_id, data.get_desk())
+
     elif text == 'Классный чат':
         return
+
     elif text == 'Афиша, новости':
         bot.send_message(chat_id, data.get_afisha())
+
     elif text == 'Добашнее задание':
         bot.send_message(chat_id, data.print_hw())
+
     elif text == 'Личный кабинет':
         msg = bot.send_message(chat_id, 'Введите персональный код ученика (до 3-ёх символов):')
         bot.register_next_step_handler(msg, person_room)
+
+    elif text == 'Создать':     # меню создания
+        bot.send_message(chat_id, 'Выберите что именно вы хотите создать:', reply_markup=create_admin())
+
+    elif text == 'Школу':   # создание школы
+        msg = bot.send_message(chat_id, 'Введите id новой школы(3 символа):')
+        bot.register_next_step_handler(msg, create_school)
+
+    elif text == 'Класс':   # создание класса
+        msg = bot.send_message(chat_id, 'Введите id школы, в которой будет этот класс:')
+        bot.register_next_step_handler(msg, create_grade)
+
+    elif text == 'Ученика':  # создание ученика
+        msg = bot.send_message(chat_id, 'Введите id класса, в который хотите добавить ученика:')
+        bot.register_next_step_handler(msg, pre_create_stud)
+
+    elif text == 'Учителя':  # создание учителя
+        msg = bot.send_message(chat_id, 'Введите id школы, в которую добавить учителя:')
+        bot.register_next_step_handler(msg, pre_create_teach)
+
+    elif text == 'Назад в админ. меню':   # возврат в комнату выбора между создать и редачить
+        admin_room(message)
 
 
 if __name__ == '__main__':

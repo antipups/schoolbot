@@ -122,7 +122,8 @@ def get_all_timetable():
 
 
 def get_desk():  # получение доски объявления выбранного класса
-    cursor.execute(f'SELECT * FROM grades WHERE grade_id = {dict_of_data.get("grade_id")}')
+    school_id, grade_id = dict_of_data.get("school_id"), dict_of_data.get("grade_id")
+    cursor.execute(f'SELECT * FROM grades WHERE grade_id = "{grade_id}" AND school_id = "{school_id}"')
     return cursor.fetchall()[0][6]
 
 
@@ -498,7 +499,8 @@ def check_school(school_id):
 def create_grade(grade_id):
     if len(grade_id) != 3:
         return False
-    cursor.execute(f'SELECT * FROM grades WHERE grade_id = "{grade_id}"')
+    school_id = dict_of_data.get('school_id')
+    cursor.execute(f'SELECT * FROM grades WHERE grade_id = "{grade_id}" AND school_id = "{school_id}"')
     if len(cursor.fetchall()) != 0:
         return False
     school_id = dict_of_data.get('school_id')
@@ -534,6 +536,10 @@ def set_photo(photo):
     if len(photo) > 127:
         return False
     photo = photo.replace('\\', '\\\\')
+    try:
+        open(photo, 'rb')
+    except :
+        return False
     school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
     cursor.execute(
         f'SELECT * FROM grades WHERE school_id = "{school_id}" AND grade_id = "{grade_id}"')  # проверяем существукет ли такой класс
@@ -559,8 +565,9 @@ def set_grade_name_teacher(name_of_teacher):
 
 
 def set_code(code):
-    if len(code) > 63:
-        return False
+    if len(code) > 63 or code.isalnum():
+        if code.isdigit() is False:
+            return False
     school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
     cursor.execute(
         f'SELECT * FROM grades WHERE school_id = "{school_id}" AND grade_id = "{grade_id}"')  # проверяем существукет ли такой класс
