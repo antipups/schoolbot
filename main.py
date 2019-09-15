@@ -16,7 +16,7 @@ def command_start(message):
     bot.send_message(chat_id, data.get_res('first_ad'))  # получение текста рекламы
     bot.send_message(chat_id, data.get_list_of_schools())
     # получение всех школ участвующих в проекте
-    msg = bot.send_message(chat_id, 'Введите индивидуальный код класса:')
+    msg = bot.send_message(chat_id, 'Введите индивидуальный код класса (до 6-ти символов):', reply_markup=cancel_key())
     bot.register_next_step_handler(msg, second_step)
 
 
@@ -33,14 +33,20 @@ def board():
     markup.add(types.KeyboardButton(text='Афиша, новости'),
                types.KeyboardButton(text='Добашнее задание'))
     markup.add(types.KeyboardButton(text='Личный кабинет'),
-               types.KeyboardButton(text='отмена'))
+               types.KeyboardButton(text='Отмена'))
+    return markup
+
+
+def cancel_key():
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    markup.add(types.KeyboardButton(text='Отмена'))
     return markup
 
 
 def second_step(message):
     chat_id = message.from_user.id
     if message.text.lower() == data.cancel_word:            # ЕСЛИ НАДО БУДЕТ ОТМЕНИТЬ ВТОРУЮ РЕКЛАМУ
-        bot.send_message(chat_id, 'Операция отменена.')
+        bot.send_message(chat_id, 'Операция отменена.', reply_markup=cancel_key())
         return
     with open(data.get_res('second_pic'), 'rb') as f:
         bot.send_photo(chat_id, f.read())  # получение второго банера рекламы
@@ -49,7 +55,7 @@ def second_step(message):
     grade = data.get_grade(message.text)  # получаем всю информацию о классе для формы
     if grade is None:   # если школа не найдена
         msg = bot.send_message(chat_id, 'Неверный код, попробуйте'
-                                        ' ещё раз(или введите *отмена*):')
+                                        ' ещё раз(или нажмите кнопку *Отмена*):', reply_markup=cancel_key())
         bot.register_next_step_handler(msg, second_step)
         return
     time.sleep(3)
@@ -184,7 +190,7 @@ def callback(obj):
         bot.send_message(chat_id, 'Выберите действие :', reply_markup=act_on_stud(obj.data))
 
     else:   # код учителя, или же проставления оценки
-        bot.send_message(chat_id, obj.data)
+        data.dict_of_data['last_stud_id'] = obj.data
         msg = bot.send_message(chat_id, 'Введите оценку:')
         bot.register_next_step_handler(msg, accept)
 
@@ -198,7 +204,7 @@ def person_room(message):   # комната школьника
     # если код неверен выходим, если верен выводим оценки
     if marks is None:
         msg = bot.send_message(message.from_user.id, 'Неверный код, или у ученика нет оценок, '
-                                                     'попробуйте ещё раз или пропишите "отмена" для выхода:')
+                                                     'попробуйте ещё раз или нажмите кнопку "Отмена" для выхода:')
         bot.register_next_step_handler(msg, person_room)
         return
     bot.send_message(chat_id, marks)   # выводим оценки
@@ -206,7 +212,7 @@ def person_room(message):   # комната школьника
 
 @bot.message_handler(commands=['room'])  # комната преподов
 def room_of_teacher(message):
-    msg = bot.send_message(message.from_user.id, 'Введите персональный код:')
+    msg = bot.send_message(message.from_user.id, 'Введите персональный код:', reply_markup=cancel_key())
     bot.register_next_step_handler(msg, pre_teacher_room)
 
 
@@ -216,10 +222,11 @@ def pre_teacher_room(message):
         return
     if data.check_teacher(message.text):
         # если препод есть идем дальше, иначе выкидываем
-        msg = bot.send_message(message.from_user.id, 'Неверный код, попробуйте ещё раз:')
+        msg = bot.send_message(message.from_user.id, 'Неверный код, попробуйте ещё раз или нажмите кнопку *Отмена*:',
+                               reply_markup=cancel_key())
         bot.register_next_step_handler(msg, pre_teacher_room)
         return
-    msg = bot.send_message(message.from_user.id, 'Введите пароль:')
+    msg = bot.send_message(message.from_user.id, 'Введите пароль:', reply_markup=cancel_key())
     bot.register_next_step_handler(msg, teacher_room)
 
 
@@ -227,6 +234,7 @@ def grades(ls_of_grades):   # генератор списка классов
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
     for i in ls_of_grades:
         markup.add(types.KeyboardButton(text=i[0]))
+    markup.add(types.KeyboardButton(text='Отмена'))
     return markup
 
 
@@ -237,9 +245,9 @@ def teacher_room(message):
         return
     teacher = data.check_pass(message.text)
     if teacher is None:  # проверка на пароль
-        # cleaner(chat_id, message.message_id)
-        bot.send_message(message.from_user.id, 'Неверный пароль, если хотите '
-                                               'продолжить переавторизируйтесь (/room)')
+        msg = bot.send_message(message.from_user.id, 'Неверный пароль, попробуйте ввести ещё раз,'
+                                                     ' или нажмите кнопку *Отмена*:', reply_markup=cancel_key())
+        bot.register_next_step_handler(msg, teacher_room)
         return
     ls_of_grades = data.grades()   # получаем из id учителя все классы(т.к. есть school_id)
     msg = bot.send_message(message.from_user.id, 'Введите класс:',
@@ -261,9 +269,9 @@ def change_hw_or_marks(message):
         return
     data.dict_of_data['grade'] = message.text
     if data.check_grade():
-        # cleaner(chat_id, message.message_id)
-        bot.send_message(chat_id, 'Введенный класс не сущесвует, чтобы '
-                                  'продолжить переавторизируйтесь (/room)')
+        msg = bot.send_message(chat_id, 'Введенный класс не сущесвует, введите заного,'
+                                        ' или нажмите кнопку *Отмена*:')
+        bot.register_next_step_handler(msg, change_hw_or_marks)
         return
     bot.send_message(chat_id, 'Выберите действие: ',
                      reply_markup=action())
@@ -273,28 +281,28 @@ def change_homework(message):
     chat_id = message.from_user.id
     if message.text.lower() == data.cancel_word:
         bot.send_message(chat_id, 'Операция отменена.')
-        # cleaner(chat_id, message.message_id)
         return
     # получаем все данные, а именно логин, класс, дз
     new_task = data.change_homework(message.text)
-    # cleaner(chat_id, message.message_id)
-    if new_task.find('/room') != -1:
-        bot.send_message(chat_id, new_task)
-    else:
-        bot.send_message(chat_id, 'Задание было успешно обновленно;\nНовое задание: \n' + new_task
-                         + '\nДля продолжения работы, переавторизуйтесь(/room).')
+    bot.send_message(chat_id, 'Задание было успешно обновленно;\nНовое задание: \n' + new_task)
 
 
 def teacher_edit(message):
     chat_id = message.from_user.id
+    try:    # если пользователь ошибся и перехотел вводить заного
+        message.data.lower()
+    except AttributeError:
+        bot.send_message(chat_id, 'Операция отменена.')
+        return
+
     if message.data.lower() == data.cancel_word:
         bot.send_message(chat_id, 'Операция отменена.')
         return
     magazine = data.magazine()
     if len(magazine) == 0:
-        # cleaner(chat_id, message.message.message_id)
-        bot.send_message(chat_id, 'Выбранный класс не существует,'
-                                  ' для продолжения переавторизируйтесь (/room)')
+        msg = bot.send_message(chat_id, 'В веденном классе нет учеников, попробуйте ввести другой класс,'
+                                        'или нажмите *Отмена* для выхода:')
+        bot.register_next_step_handler(msg, teacher_edit)
         return
     # получаем всех учеников и выводим их списком
     markup = types.InlineKeyboardMarkup()
@@ -308,21 +316,14 @@ def accept(message):    # установка оценки,
     if message.text.lower() == data.cancel_word:
         bot.send_message(chat_id, 'Операция отменена.')
         return
-    temp_message = bot.forward_message(chat_id, chat_id, message.message_id - 2)
-    stud_id = temp_message.text
-    # получаем код ученика и редачим его оценку
-    bot.delete_message(chat_id, message.message_id - 2)
-    bot.delete_message(chat_id, temp_message.message_id)
-    data.set_mark(message.text, stud_id)
+    data.set_mark(message.text)
     # устанавливаем оценку, чистим все лишнее
-    # cleaner(chat_id, message.message_id)
-    bot.send_message(chat_id, 'Оценка успешно установленна.\n'
-                              'Для продолжения работы, переавторизуйтесь(/room).')
+    bot.send_message(chat_id, 'Оценка успешно установленна.')
 
 
 @bot.message_handler(commands=['admin'])    # панель админа
 def admin(message):
-    msg = bot.send_message(message.from_user.id, 'Введите пароль:')
+    msg = bot.send_message(message.from_user.id, 'Введите пароль:', reply_markup=cancel_key())
     bot.register_next_step_handler(msg, admin_room)
 
 
@@ -353,12 +354,14 @@ def admin_room(message):
         bot.send_message(chat_id, 'Операция отменена.')
         return
     if message.text != data.dict_of_admins.get(chat_id):
-        bot.send_message(message.from_user.id, 'Неверный пароль.\nДля продолжения работы переавторизируйтесь (/admin)')
+        bot.send_message(message.from_user.id, 'Неверный пароль.\nВведите его заного или выйдите нажав кнопку *Отмена*:', reply_markup=cancel_key())
         return
     # если все успешно, то есть пароль ок,
     # то ты в комнате админа
-    bot.send_message(chat_id, 'Редактировать:', reply_markup=admin_butt())
-    bot.send_message(chat_id, 'Создать:', reply_markup=admin_butt2())
+
+    bot.send_message(chat_id, 'Выберите какое действие вы хотите совершить:')
+    # bot.send_message(chat_id, 'Редактировать:', reply_markup=admin_butt())
+    # bot.send_message(chat_id, 'Создать:', reply_markup=admin_butt2())
 
 
 def pre_change_banner_or_text(message):
@@ -480,7 +483,6 @@ def accept_id(message):
     temp_message = bot.forward_message(chat_id, chat_id, message.message_id - 2)
     old_stud_id = temp_message.text
     bot.delete_message(chat_id, temp_message.message_id)
-    # cleaner(chat_id, message.message_id)
     if data.change_id(message.text, old_stud_id):
         bot.send_message(chat_id, f'Операция успешно завершена.\n'
                                   f'ID ученика : {message.text}')
@@ -921,7 +923,7 @@ def text(message):
     elif text == 'Добашнее задание':
         bot.send_message(chat_id, data.print_hw())
     elif text == 'Личный кабинет':
-        msg = bot.send_message(chat_id, 'Введите персональный код ученика:')
+        msg = bot.send_message(chat_id, 'Введите персональный код ученика (до 3-ёх символов):')
         bot.register_next_step_handler(msg, person_room)
 
 

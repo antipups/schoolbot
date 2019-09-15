@@ -8,7 +8,8 @@ conn = mysql.connector.connect(user='root', password='0000001', host='127.0.0.1'
 cursor = conn.cursor(buffered=True)
 
 dict_of_data = {'login': '0', 'password': '0', 'grade': '0',
-                'school_id': '0', 'grade_id': '0', 'name': '0'}   # словарь с аудентификаторными данными
+                'school_id': '0', 'grade_id': '0', 'name': '0',
+                'stud_id': [], 'last_stud_id': '0'}   # словарь с аудентификаторными данными
 cancel_word = 'отмена'
 dict_of_admins = {704369002: "1",
                   }
@@ -171,6 +172,7 @@ def check_teacher(login):
                    f'school_id = "{login[:3]}" AND teacher_id = "{login[3:]}"')
     if cursor.fetchall():
         dict_of_data['login'] = login
+        dict_of_data['school_id'] = login[:3]   # записываем для сессии, чтоб препод не переписывал рум по 100 раз
         return False
     return True
 
@@ -190,7 +192,7 @@ def check_pass(password):
 def magazine():
     # функция на получение учеников по заданному предмету
     # + прибавление балов за вход в меню выставления оценок
-    login, password, grade = dict_of_data.get('login'), dict_of_data.get('password'), dict_of_data.get('grade')
+    login, grade = dict_of_data.get('login'), dict_of_data.get('grade')
     cursor.execute(f'SELECT score FROM teachers WHERE school_id = "{login[:3]}" AND teacher_id = "{login[3:]}"')
     tmp = cursor.fetchall()[0][0]
     if tmp is None:
@@ -203,21 +205,24 @@ def magazine():
     conn.commit()
     cursor.execute(f'SELECT grade_id FROM grades WHERE '
                    f'school_id = "{login[:3]}" AND number_grade = "{grade}"')
+    grade_id = dict_of_data['grade_id'] = cursor.fetchall()[0][0]
     cursor.execute(f'SELECT name, stud_id FROM students '
-                   f'WHERE grade_id = "{cursor.fetchall()[0][0]}" AND school_id = "{login[:3]}"')
+                   f'WHERE grade_id = "{grade_id}" AND school_id = "{login[:3]}"')
     # получение списка всех студентов
     ls_of_result = []
     for i in cursor.fetchall():
         ls_of_result.append(i[1] + ':' + i[0])
+        dict_of_data['stud_id'].append(i[0])
         # выбираем учеников и их оценки по предмету
     return ls_of_result
 
 
-def set_mark(mark, stud_id):
+def set_mark(mark):
     # установка оценки
     login, grade = dict_of_data.get('login'), dict_of_data.get('grade')
     cursor.execute(f'SELECT grade_id FROM grades '  # получаем айди класса, из его номера
                    f'WHERE school_id = "{login[:3]}" AND number_grade = "{grade}"')
+    stud_id = dict_of_data.get('last_stud_id')
     grade_id = cursor.fetchall()[0][0]
     cursor.execute(f'SELECT name_of_subject FROM teachers '     # получаем предмет учителя
                    f'WHERE school_id = "{login[:3]}" AND teacher_id = "{login[3:]}"')
