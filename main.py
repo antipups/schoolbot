@@ -1,5 +1,4 @@
 import time
-
 import telebot
 from telebot import types
 import datetime
@@ -7,14 +6,6 @@ import data
 
 
 bot = telebot.TeleBot(data.TOKEN)
-
-
-# def cleaner(chat_id, message_id):   # чистилка смс, если вдруг что-то пошло не по форме
-#     for i in range(0, 21):
-#         try:
-#             bot.delete_message(chat_id, message_id - i)
-#         except:
-#             continue
 
 
 @bot.message_handler(commands=['start'])
@@ -41,7 +32,8 @@ def board():
     markup.add(third_button, fourth_button)
     markup.add(types.KeyboardButton(text='Афиша, новости'),
                types.KeyboardButton(text='Добашнее задание'))
-    markup.add(types.KeyboardButton(text='Личный кабинет'))
+    markup.add(types.KeyboardButton(text='Личный кабинет'),
+               types.KeyboardButton(text='отмена'))
     return markup
 
 
@@ -82,27 +74,6 @@ def act_on_stud(stud_id):   # работа с учеником в меню ад�
 @bot.callback_query_handler(func=lambda message: True)
 def callback(obj):
     chat_id = obj.from_user.id
-    # print(obj.data)
-    # if obj.data == 'tt':  # код на завтрашний день
-    #     timetable = data.get_timetable_on_tomorrow()
-    #     bot.send_message(chat_id, timetable)
-
-    # elif obj.data == 'chat':    # код на переход в беседу школьникв
-    #     переход в другой чат, Серж
-        # pass
-
-    # elif obj.data == 'desk':    # код на доску
-    #     bot.send_message(chat_id, data.get_desk())
-
-    # elif obj.data == 'afisha':  # код на афишу
-    #     bot.send_message(chat_id, data.get_afisha())
-
-    # elif obj.data == 'room':    # код на комнату школьника
-    #     msg = bot.send_message(chat_id, 'Введите персональный код ученика:')
-    #     bot.register_next_step_handler(msg, person_room)
-
-    # elif obj.data == 'allt':   # вывод всего расписания
-    #     bot.send_message(chat_id, data.get_all_timetable())
 
     if obj.data == 'банер' or obj.data == 'текст':
         # смена админом банера или текста
@@ -129,9 +100,6 @@ def callback(obj):
 
     elif obj.data == 'ro':  # выбор дз для изменения
         teacher_edit(obj)
-
-    # elif obj.data == 'homework':  # вывод домашнего задания   СДЕЛАТЬ!!!!
-    #     bot.send_message(chat_id, data.print_hw())
 
     elif obj.data == 'сш':  # смена кода школы препода
         msg = bot.send_message(chat_id, 'Введите новый код школы (3 символа):')
@@ -181,10 +149,6 @@ def callback(obj):
     elif obj.data == 'класс':
         msg = bot.send_message(chat_id, 'Введите id класса которого вы хотите редактировать:')
         bot.register_next_step_handler(msg, edit_grade)
-
-    # elif obj.data == 'привки':
-    #     msg = bot.send_message(chat_id, 'Введите новое приветствие школы:')
-    #     bot.register_next_step_handler(msg, edit_slogan)
 
     elif obj.data == 'новыны':
         msg = bot.send_message(chat_id, 'Введите новую новость в школе:')
@@ -633,19 +597,6 @@ def new_title_of_school(message):
         bot.register_next_step_handler(msg, new_title_of_school)
 
 
-# def new_slogan_of_school(message):
-#     chat_id = message.from_user.id
-#     if message.text.lower() == data.cancel_word:
-#         bot.send_message(chat_id, 'Операция отменена.')
-#         return
-#     if data.set_new_slogan(message.text):
-#         msg = bot.send_message(chat_id, 'Слоган школы успешно установленн, введите афишу школы:')
-#         bot.register_next_step_handler(msg, new_afisha_of_school)
-#     else:
-#         msg = bot.send_message(chat_id, 'Введенный текст не подходит, введите новый:')
-#         bot.register_next_step_handler(msg, new_slogan_of_school)
-
-
 def new_afisha_of_school(message):
     chat_id = message.from_user.id
     if message.text.lower() == data.cancel_word:
@@ -866,18 +817,6 @@ def edit_name_of_school(message):
     else:
         msg = bot.send_message(chat_id, 'Введите другое название школы:')
         bot.register_next_step_handler(msg, edit_name_of_school)
-#
-#
-# def edit_slogan(message):
-#     chat_id = message.from_user.id
-#     if message.text.lower() == data.cancel_word:
-#         bot.send_message(chat_id, 'Операция отменена.')
-#         return
-#     if data.set_slogan(message.text):
-#         bot.send_message(chat_id, 'Приветствие школы успешно изменено.')
-#     else:
-#         msg = bot.send_message(chat_id, 'Введите другое привествие школы:')
-#         bot.register_next_step_handler(msg, edit_slogan)
 
 
 def edit_news(message):
