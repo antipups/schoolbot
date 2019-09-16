@@ -9,8 +9,9 @@ cursor = conn.cursor(buffered=True)
 
 dict_of_data = {'login': '0', 'password': '0', 'grade': '0',
                 'school_id': '0', 'grade_id': '0', 'name': '0',
-                'stud_id': [], 'last_stud_id': '0'}   # словарь с аудентификаторными данными
+                'stud_id': [], 'last_stud_id': '0', 'ad': '0'}   # словарь с аудентификаторными данными
 cancel_word = 'отмена'
+back_word = 'Назад в админ. меню'
 dict_of_admins = {704369002: "1",
                   }
 
@@ -233,33 +234,22 @@ def set_mark(mark):
     conn.commit()
 
 
-def check_ad(type_ad, number_ad):
-    if type_ad == 'текст':
-        dict_of_ad = {'1': 'first_ad', '2': 'second_ad'}
-        cursor.execute(f'SELECT value FROM res WHERE name = "{dict_of_ad.get(number_ad)}"')
-        if cursor.fetchall():
-            return False
-        return True
+def check_ad(id_ad):
+    cursor.execute(f'SELECT name FROM res')
+    for i in cursor.fetchall():
+        if id_ad in i:
+            dict_of_data['ad'] = id_ad
+            return True
     else:
-        dict_of_ad = {'1': 'first_pic', '2': 'second_pic'}
-        cursor.execute(f'SELECT value FROM res WHERE name = "{dict_of_ad.get(number_ad)}"')
-        if cursor.fetchall():
-            return False
-        return True
+        return False
 
 
-def change_ad(type_ad, number_ad, new_res):
+def change_ad(new_ad_text):
     # смена рекламы/банера, меняем
-    if type_ad == 'текст':
-        dict_of_ad = {'1': 'first_ad', '2': 'second_ad'}
-        cursor.execute(f'UPDATE res SET value = "{new_res}" '
-                       f'WHERE name = "{dict_of_ad.get(number_ad)}"')
-        conn.commit()
-    else:
-        dict_of_ad = {'1': 'first_pic', '2': 'second_pic'}
-        cursor.execute(f'UPDATE res SET value = "{new_res}" '
-                       f'WHERE name = "{dict_of_ad.get(number_ad)}"')
-        conn.commit()
+    new_ad_text = new_ad_text.replace('\\', '\\\\')
+    name = dict_of_data.get('ad')
+    cursor.execute(f'UPDATE res SET value = "{new_ad_text}" WHERE name = "{name}"')
+    conn.commit()
 
 
 def set_tt(timetable, day):
@@ -294,11 +284,12 @@ def delete_stud(stud_id):
     conn.commit()
 
 
-def change_id(stud_id, old_stud_id):
+def change_id(stud_id):
     if len(stud_id) != 3:
         return False
     school_id = dict_of_data.get('school_id')
     grade_id = dict_of_data.get('grade_id')
+    old_stud_id = dict_of_data.get('last_stud_id')
     cursor.execute(f'SELECT * FROM students WHERE stud_id = "{stud_id}" AND school_id = "{school_id}" '
                    f'AND grade_id = "{grade_id}"')
     if cursor.fetchall():   # если id занят или ещё что-то не так
@@ -591,7 +582,7 @@ def set_desk(text):
     # махинация для добавления новости, и удалений старых
     cursor.execute(f'SELECT bulletin_board FROM grades WHERE school_id = "{school_id}" AND grade_id = "{grade_id}"')
     news = cursor.fetchall()[0][0]
-    news += text + '\n\n\n'
+    news += '\n\n\n' + text
     while len(news) > 1023:
         news = news[news.find('\n\n\n'):]   # режем старые, если кончилось место
 
@@ -671,12 +662,18 @@ def set_news(news):
     school_id = dict_of_data.get('school_id')
     cursor.execute(f'SELECT news_of_school FROM schools WHERE school_id = "{school_id}"')   # для добавления новой новости
     old_news = cursor.fetchall()[0][0]
-    old_news += news + '\n\n\n'
+    old_news += '\n\n\n' + news
     while len(old_news) > 511:   # если новостей уже много, режем пстарые новости
         old_news = old_news[old_news.find('\n\n\n') + 3:]
     cursor.execute(f'UPDATE schools SET news_of_school = "{old_news}" WHERE school_id = "{school_id}"')
     conn.commit()
     return True
+
+
+def get_ad():
+    cursor.execute(f'SELECT * FROM res')
+    return cursor.fetchall()
+
 
 if __name__ == '__main__':
     pass

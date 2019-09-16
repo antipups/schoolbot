@@ -11,9 +11,9 @@ bot = telebot.TeleBot(data.TOKEN)
 @bot.message_handler(commands=['start'])
 def command_start(message):
     chat_id = message.from_user.id
-    with open(data.get_res('first_pic'), 'rb') as f:
+    with open(data.get_res('картинка1'), 'rb') as f:
         bot.send_photo(chat_id, f.read())  # получение второго банера рекламы
-    bot.send_message(chat_id, data.get_res('first_ad'))  # получение текста рекламы
+    bot.send_message(chat_id, data.get_res('реклама1'))  # получение текста рекламы
     bot.send_message(chat_id, data.get_list_of_schools())
     # получение всех школ участвующих в проекте
     msg = bot.send_message(chat_id, 'Введите индивидуальный код класса (до 6-ти символов):', reply_markup=cancel_key())
@@ -48,9 +48,9 @@ def second_step(message):
     if message.text.lower() == data.cancel_word:            # ЕСЛИ НАДО БУДЕТ ОТМЕНИТЬ ВТОРУЮ РЕКЛАМУ
         bot.send_message(chat_id, 'Операция отменена.', reply_markup=cancel_key())
         return
-    with open(data.get_res('second_pic'), 'rb') as f:
+    with open(data.get_res('картинка2'), 'rb') as f:
         bot.send_photo(chat_id, f.read())  # получение второго банера рекламы
-    bot.send_message(chat_id, data.get_res('second_ad'))  # получение второго текста рекламы
+    bot.send_message(chat_id, data.get_res('реклама2'))  # получение второго текста рекламы
 
     grade = data.get_grade(message.text)  # получаем всю информацию о классе для формы
     if grade is None:   # если школа не найдена
@@ -81,26 +81,7 @@ def act_on_stud(stud_id):   # работа с учеником в меню ад�
 def callback(obj):
     chat_id = obj.from_user.id
 
-    if obj.data == 'банер' or obj.data == 'текст':
-        # смена админом банера или текста
-        bot.send_message(chat_id, obj.data)
-        msg = bot.send_message(chat_id, f'Какой {obj.data} вы хотите изменить?(1-ый или 2-ой)')
-        bot.register_next_step_handler(msg, pre_change_banner_or_text)
-
-    elif obj.data == 'смрасп':  # смена расписания выбранного класса
-        msg = bot.send_message(chat_id, 'Введите код класса:')
-        bot.register_next_step_handler(msg, pre_change_tt)
-
-    elif obj.data == 'спуч':  # смена списка школьников
-        msg = bot.send_message(chat_id, 'Введите код класса:')
-        bot.register_next_step_handler(msg, pre_change_list_of_child)
-
-    elif obj.data == 'пркод':  # выбор препод для изменения
-        msg = bot.send_message(chat_id, 'Введите код преподователя,'
-                                        ' который хотите изменить:')
-        bot.register_next_step_handler(msg, change_id_teacher)
-
-    elif obj.data == 'dz':  # выбор дз для изменения
+    if obj.data == 'dz':  # выбор дз для изменения
         msg = bot.send_message(chat_id, 'Введите домашнее задание:')
         bot.register_next_step_handler(msg, change_homework)
 
@@ -128,17 +109,9 @@ def callback(obj):
         data.delete_teacher()
         bot.send_message(chat_id, 'Операция выполнена успешно.')
 
-    elif obj.data == 'школа':
-        msg = bot.send_message(chat_id, 'Введите id школы которую хотите отредактировать:')
-        bot.register_next_step_handler(msg, pre_edit_school)
-
     elif obj.data == 'назвшк':
         msg = bot.send_message(chat_id, 'Введите новое название школы:')
         bot.register_next_step_handler(msg, edit_name_of_school)
-
-    elif obj.data == 'класс':
-        msg = bot.send_message(chat_id, 'Введите id класса которого вы хотите редактировать:')
-        bot.register_next_step_handler(msg, edit_grade)
 
     elif obj.data == 'новыны':
         msg = bot.send_message(chat_id, 'Введите новую новость в школе:')
@@ -165,7 +138,7 @@ def callback(obj):
         bot.send_message(chat_id, 'Операция прошла успешно.')
 
     elif obj.data.find('edit') > -1:   # изменение id школьника
-        bot.send_message(chat_id, obj.data[:obj.data.find('edit')])
+        data.dict_of_data['last_stud_id'] = obj.data
         msg = bot.send_message(chat_id, 'Введите новый код ученика (3 символа):')
         bot.register_next_step_handler(msg, accept_id)
 
@@ -319,68 +292,60 @@ def choose():
 
 
 def admin_room(message):
-    chat_id = message.from_user.id
+    chat_id = message.from_user.id  # ЗАЧЕМ ПАРОЛЬЬЬ???
     if message.text.lower() == data.cancel_word:
         bot.send_message(chat_id, 'Операция отменена.')
         return
     if message.text != data.dict_of_admins.get(chat_id) and message.text != 'Назад в админ. меню':
-        bot.send_message(message.from_user.id, 'Неверный пароль.\nВведите его заного или выйдите нажав кнопку *Отмена*:', reply_markup=cancel_key())
+        msg = bot.send_message(message.from_user.id, 'Неверный пароль.\nВведите его '
+                                                     'заного или выйдите нажав кнопку *Отмена*:')
+        bot.register_next_step_handler(msg, admin_room)
         return
     # если все успешно, то есть пароль ок,
     # то ты в комнате админа
-
     bot.send_message(chat_id, 'Выберите какое действие вы хотите совершить:', reply_markup=choose())
-    # bot.send_message(chat_id, 'Редактировать:', reply_markup=admin_butt())
-    # bot.send_message(chat_id, 'Создать:', reply_markup=admin_butt2())
 
 
 def pre_change_banner_or_text(message):
-    # получаем информацию, а именно что надо изменить
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
-    temp_message = bot.forward_message(chat_id, chat_id, message.message_id - 2)
-    change_type = temp_message.text
-    bot.delete_message(chat_id, temp_message.message_id)
-    if data.check_ad(change_type, message.text):
-        bot.send_message(chat_id, f'Нужного {change_type}а не найдено.')
-        return
-    # проверка есть ли такая реклама
-    msg = bot.send_message(chat_id,
-                           'Введите новую информацию :\n(банер - путь'
-                           ' к картинке,\nтекст - сам текст):')
-    bot.register_next_step_handler(msg, change_banner_or_text)
+    if data.check_ad(message.text):
+        if message.text.find('картинка') > -1:
+            msg = bot.send_message(chat_id, 'Введите путь к новой картинке:')
+            bot.register_next_step_handler(msg, change_banner_or_text)
+        else:
+            msg = bot.send_message(chat_id, 'Введите новый текст:')
+            bot.register_next_step_handler(msg, change_banner_or_text)
+    else:
+        msg = bot.send_message(chat_id, 'Введенное рекламное средство не найдено,\nкликните на клавиатуру ещё раз:')
+        bot.register_next_step_handler(msg, pre_change_banner_or_text)
 
 
 def change_banner_or_text(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
-    temp_message = bot.forward_message(chat_id, chat_id, message.message_id - 5)
-    change_type = temp_message.text
-    bot.delete_message(chat_id, temp_message.message_id)
-    temp_message = bot.forward_message(chat_id, chat_id, message.message_id - 3)
-    number_ad = temp_message.text
-    bot.delete_message(chat_id, temp_message.message_id)
-    # после получение всей инфы, меняем банер, или рекламный текст
-    data.change_ad(change_type, number_ad, message.text.replace('\\', '\\\\'))
+    data.change_ad(message.text)
     bot.send_message(chat_id, 'Операция успешно завершена.')
 
 
 def days_tt():  # клавиатурка для расписания
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
     markup.add(types.KeyboardButton(text='Понедельник'), types.KeyboardButton(text='Вторник'))
     markup.add(types.KeyboardButton(text='Среда'), types.KeyboardButton(text='Четверг'))
     markup.add(types.KeyboardButton(text='Пятница'), types.KeyboardButton(text='Суббота'))
+    markup.add(types.KeyboardButton(text='Отмена'),
+               types.KeyboardButton(text='Назад в админ. меню'))
     return markup
 
 
 def pre_change_tt(message):  # функция для ввода дня изменяемого раписанием
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.get_grade(message.text) is None:
         msg = bot.send_message(chat_id, 'Неверный код, попробуйте заного ввести код:')
@@ -394,15 +359,16 @@ def pre_change_tt(message):  # функция для ввода дня изме�
 
 def pre_change_tt2(message):  # функция для ввода расписания
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     ls_of_days = ['Понедельник', 'Вторник', 'Среда',
                   'Четверг', 'Пятница', 'Суббота']
     if message.text not in ls_of_days:
-        bot.send_message(chat_id, 'Вы не выбрали день.\n'
-                                  'Для продолжения работы '
-                                  'переавторизируйтесь(/admin)')
+        msg = bot.send_message(chat_id, 'Вы не выбрали день.\n'
+                                        'Выберите день заного:',
+                               reply_markup=days_tt())
+        bot.register_next_step_handler(msg, pre_change_tt2)
         return
     msg = bot.send_message(chat_id, 'Введите новое '
                                     'расписание (символ-разделитель - ; ):')
@@ -413,15 +379,17 @@ def pre_change_tt2(message):  # функция для ввода расписа�
 
 def change_tt(message):  # функция на смену расписания
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     temp_message = bot.forward_message(chat_id, chat_id, message.message_id - 2)
     day = temp_message.text
     bot.delete_message(chat_id, temp_message.message_id)
     data.set_tt(message.text, day)
     # установка расписания
-    bot.send_message(chat_id, 'Операция успешно завершена.')
+    msg = bot.send_message(chat_id, 'Операция успешно завершена, вы можете продолжить'
+                                    ' обновлять раписание, если хотите выйти нажмите *Назад*')
+    bot.register_next_step_handler(msg, pre_change_tt2)
 
 
 def studs(ls_of_stud):  # генерация кнопок студентов
@@ -433,12 +401,13 @@ def studs(ls_of_stud):  # генерация кнопок студентов
 
 def pre_change_list_of_child(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     ls_of_stud = data.check_stud(message.text)
     if ls_of_stud is None:
-        msg = bot.send_message(chat_id, 'Неверный код, попробуйте ещё раз:')
+        msg = bot.send_message(chat_id, 'Неверный код, или в классе нет учеников,'
+                                        ' попробуйте ещё раз или нажмите кнопку *Назад*:')
         bot.register_next_step_handler(msg, pre_change_list_of_child)
         return
     bot.send_message(chat_id, 'Список учеников, кликните для редактирования :',
@@ -447,17 +416,15 @@ def pre_change_list_of_child(message):
 
 def accept_id(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
-    temp_message = bot.forward_message(chat_id, chat_id, message.message_id - 2)
-    old_stud_id = temp_message.text
-    bot.delete_message(chat_id, temp_message.message_id)
-    if data.change_id(message.text, old_stud_id):
+    if data.change_id(message.text):
         bot.send_message(chat_id, f'Операция успешно завершена.\n'
                                   f'ID ученика : {message.text}')
     else:
-        bot.send_message(chat_id, 'Выбранный ID не подходит, попробуйте другой.')
+        msg = bot.send_message(chat_id, 'Выбранный ID не подходит, попробуйте другой, или нажмите кнопку *Назад*:')
+        bot.register_next_step_handler(msg, accept_id)
 
 
 def buttons_of_teacher(teacher_id):  # клавиатурка для игры с учителем
@@ -472,8 +439,8 @@ def buttons_of_teacher(teacher_id):  # клавиатурка для игры с
 
 def change_id_teacher(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     try:
         info = data.check_teacher_id(message.text)[0]
@@ -497,32 +464,34 @@ def change_id_teacher(message):
 
 def change_school_teacher(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.new_teacher_schoold_id(message.text):
         bot.send_message(chat_id, 'Операция успешно завершена.')
     else:
-        bot.send_message(chat_id, 'Выбранный ID не подходит, если хотите продолжить'
-                                  ' переавторизуйтесь (/admin)')
+        msg = bot.send_message(chat_id, 'Выбранный ID не подходит, введите его ещё раз,'
+                                        ' или кликните на кнопку *Назад* для выхода')
+        bot.register_next_step_handler(msg, change_school_teacher)
 
 
 def change_teacher_id(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.new_teacher_id(message.text):
         bot.send_message(chat_id, 'Операция успешно завершена.')
     else:
-        bot.send_message(chat_id, 'Выбранный ID не подходит, если хотите продолжить '
-                                  'переавторизуйтесь (/admin)')
+        msg = bot.send_message(chat_id, 'Выбранный ID не подходит, введите его ещё раз,'
+                                        ' или кликните на кнопку *Назад* для выхода')
+        bot.register_next_step_handler(msg, change_teacher_id)
 
 
 def change_teacher_password(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.new_teacher_password(message.text):
         bot.send_message(chat_id, 'Операция успешно завершена.')
@@ -533,8 +502,8 @@ def change_teacher_password(message):
 
 def change_teacher_subj(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.new_teacher_subj(message.text):
         bot.send_message(chat_id, 'Операция успешно завершена.')
@@ -545,8 +514,8 @@ def change_teacher_subj(message):
 
 def create_school(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.create_school(message.text):
         msg = bot.send_message(chat_id, 'Школа успешно созданна, введите название новой школы:')
@@ -558,8 +527,8 @@ def create_school(message):
 
 def new_title_of_school(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_title_of_school(message.text):
         msg = bot.send_message(chat_id, 'Название школы успешно установленно, введите афишу школы:')
@@ -571,8 +540,8 @@ def new_title_of_school(message):
 
 def new_afisha_of_school(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_new_afisha(message.text):
         bot.send_message(chat_id, 'Школа успешно созданна.')
@@ -583,8 +552,8 @@ def new_afisha_of_school(message):
 
 def create_grade(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.check_school(message.text):  # проверка, существует ли введенная школа
         msg = bot.send_message(chat_id, 'Введите id класса:')
@@ -596,8 +565,8 @@ def create_grade(message):
 
 def new_grade(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.create_grade(message.text):
         msg = bot.send_message(chat_id, 'Класс создан, введите номер класса:')
@@ -609,8 +578,8 @@ def new_grade(message):
 
 def set_number(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_number(message.text):
         msg = bot.send_message(chat_id, 'Номер установлен, введите фотографию(путь к файлу) классного руководителя:')
@@ -622,8 +591,8 @@ def set_number(message):
 
 def set_photo(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_photo(message.text):
         msg = bot.send_message(chat_id, 'Фотография установленна, введите имя классного руководителя:')
@@ -635,8 +604,8 @@ def set_photo(message):
 
 def set_grade_name_teacher(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_grade_name_teacher(message.text):
         msg = bot.send_message(chat_id, 'Имя классного рук. установленно, введите код беседы(если нет то -1):')
@@ -648,8 +617,8 @@ def set_grade_name_teacher(message):
 
 def set_code(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_code(message.text):
         msg = bot.send_message(chat_id, 'Invite Url установлен, введите текст доски объявлений:')
@@ -661,8 +630,8 @@ def set_code(message):
 
 def set_desk(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_desk(message.text):
         bot.send_message(chat_id, 'Класс успешно создан')
@@ -673,8 +642,8 @@ def set_desk(message):
 
 def pre_create_stud(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.get_grade(message.text) is not None:
         msg = bot.send_message(chat_id, 'Введите имя нового ученика:')
@@ -686,8 +655,8 @@ def pre_create_stud(message):
 
 def create_stud(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.create_stud(message.text):
         msg = bot.send_message(chat_id, 'Имя установлено, введите id нового ученика:')
@@ -699,8 +668,8 @@ def create_stud(message):
 
 def set_stud_id(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_stud_id(message.text):
         bot.send_message(chat_id, 'Новый ученик добавлен.')
@@ -711,8 +680,8 @@ def set_stud_id(message):
 
 def pre_create_teach(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.get_school(message.text):
         msg = bot.send_message(chat_id, 'Введите преподовательский id:')
@@ -724,8 +693,8 @@ def pre_create_teach(message):
 
 def create_teach(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.create_teach(message.text):
         msg = bot.send_message(chat_id, 'Введите пароль учителя:')
@@ -737,8 +706,8 @@ def create_teach(message):
 
 def create_teacher_password(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.new_teacher_password(message.text):
         msg = bot.send_message(chat_id, 'Введите предмет учителя:')
@@ -750,8 +719,8 @@ def create_teacher_password(message):
 
 def create_teacher_subj(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.new_teacher_subj(message.text):
         bot.send_message(chat_id, 'Учитель успешно добавлен.')
@@ -769,8 +738,8 @@ def edit_school():
 
 def pre_edit_school(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.get_school(message.text):
         bot.send_message(chat_id, 'Редактировать:', reply_markup=edit_school())
@@ -781,8 +750,8 @@ def pre_edit_school(message):
 
 def edit_name_of_school(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_name_of_school(message.text):
         bot.send_message(chat_id, 'Название школы успешно изменено.')
@@ -793,8 +762,8 @@ def edit_name_of_school(message):
 
 def edit_news(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_news(message.text):
         bot.send_message(chat_id, 'Новости школы обновлены.')
@@ -814,8 +783,8 @@ def grade_butt():
 
 def edit_grade(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.get_grade(message.text) is not None:
         bot.send_message(chat_id, 'Редактировать:', reply_markup=grade_butt())
@@ -826,8 +795,8 @@ def edit_grade(message):
 
 def new_number(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_number(message.text):
         bot.send_message(chat_id, 'Номер класса установлен.')
@@ -838,8 +807,8 @@ def new_number(message):
 
 def photo_grade_teacher(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_photo(message.text):
         bot.send_message(chat_id, 'Фото класного руководителя установлено.')
@@ -850,8 +819,8 @@ def photo_grade_teacher(message):
 
 def set_grade_name_teacher2(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_grade_name_teacher(message.text):
         msg = bot.send_message(chat_id, 'Имя классного рук. установленно.')
@@ -862,8 +831,8 @@ def set_grade_name_teacher2(message):
 
 def set_desk2(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_desk(message.text):
         bot.send_message(chat_id, 'Доска обновлена')
@@ -872,15 +841,15 @@ def set_desk2(message):
         bot.register_next_step_handler(msg, set_desk)
 
 
-def admin_butt():   # клавиатурка админа
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Банер', callback_data='банер'),
-               types.InlineKeyboardButton(text='Текст', callback_data='текст'))
-    markup.add(types.InlineKeyboardButton(text='Школа', callback_data='школа'),
-               types.InlineKeyboardButton(text='Класс', callback_data='класс'))
-    markup.add(types.InlineKeyboardButton(text='Расписание', callback_data='смрасп'))
-    markup.add(types.InlineKeyboardButton(text='Учеников', callback_data='спуч'),
-               types.InlineKeyboardButton(text='Преподователей', callback_data='пркод'))
+def edit_admin():   # клавиатурка админа
+    markup = types.ReplyKeyboardMarkup()
+    markup.add(types.KeyboardButton(text='Реклама'))
+    markup.add(types.KeyboardButton(text='Школа'),
+               types.KeyboardButton(text='Класс.'))
+    markup.add(types.KeyboardButton(text='Расписание'))
+    markup.add(types.KeyboardButton(text='Учеников'),
+               types.KeyboardButton(text='Преподователей'))
+    markup.add(types.KeyboardButton(text='Назад в админ. меню'))
     return markup
 
 
@@ -890,8 +859,14 @@ def create_admin():   # клавиатурка админа на создани�
                types.KeyboardButton(text='Класс'))
     markup.add(types.KeyboardButton(text='Ученика'),
                types.KeyboardButton(text='Учителя'))
-    markup.add(types.KeyboardButton(text='Отмена'),
-               types.KeyboardButton(text='Назад в админ. меню'))
+    markup.add(types.KeyboardButton(text='Назад в админ. меню'))
+    return markup
+
+
+def edit_baner(ls_of_buttons):
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    for i in ls_of_buttons:
+        markup.add(types.KeyboardButton(text=i))
     return markup
 
 
@@ -946,6 +921,51 @@ def text(message):
 
     elif text == 'Назад в админ. меню':   # возврат в комнату выбора между создать и редачить
         admin_room(message)
+        return
+
+    elif text == 'Редактировать':
+        bot.send_message(chat_id, 'Выберите что хотите редактировать, '
+                                  'все возмодные варианты представлены на клавиатуре ниже:',
+                         reply_markup=edit_admin())
+
+    # ДАЛЕЕ ПОШЛО РЕДАКТИРОВАНИЕ
+
+    elif text == 'Реклама':
+        ls_of_data = data.get_ad()
+        ls_of_buttons = []
+        msg = ''
+        for i in ls_of_data:
+            if i[0].find('картинка'):
+                bot.send_message(chat_id, i[1])
+                msg = bot.send_message(chat_id, 'Чтобы редактировать картинку выше, введите ' + i[0])
+            else:
+                bot.send_message(chat_id, i[1])
+                msg = bot.send_message(chat_id, 'Чтобы редактировать надпись выше, введите ' + i[0])
+            ls_of_buttons.append(i[0])
+        bot.send_message(chat_id, 'Прочтите информацию выше и выберите из панели внизу что хотите редактировать:',
+                         reply_markup=edit_baner(ls_of_buttons))
+        bot.register_next_step_handler(msg, pre_change_banner_or_text)
+
+    elif text == 'Школа':
+        msg = bot.send_message(chat_id, 'Введите id школы которую хотите отредактировать:')
+        bot.register_next_step_handler(msg, pre_edit_school)
+
+    elif text == 'Класс.':
+        msg = bot.send_message(chat_id, 'Введите id класса которого вы хотите редактировать:')
+        bot.register_next_step_handler(msg, edit_grade)
+
+    elif text == 'Расписание':  # редактировать подневно расписание
+        msg = bot.send_message(chat_id, 'Введите код класса:')
+        bot.register_next_step_handler(msg, pre_change_tt)
+
+    elif text == 'Учеников':    # редактировать учеников класса
+        msg = bot.send_message(chat_id, 'Введите код класса:')
+        bot.register_next_step_handler(msg, pre_change_list_of_child)
+
+    elif text == 'Преподователей':
+        msg = bot.send_message(chat_id, 'Введите код преподователя,'
+                                        ' который хотите изменить:')
+        bot.register_next_step_handler(msg, change_id_teacher)
 
 
 if __name__ == '__main__':
