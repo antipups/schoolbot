@@ -22,6 +22,24 @@ def get_res(text):   # для получения рекламы
             return i[1]
 
 
+def get_list_of_schoold_for_admin():    # вывод школ для админа, назва + id
+    cursor.execute(f'SELECT name_school, school_id FROM schools')
+    result_str = ''
+    for i in cursor.fetchall():
+        result_str += i[0] + ' ID ' + i[1] + '\n'
+    return result_str
+
+
+def get_list_of_grades_for_admin():     # получение всех классов участвующих в проекте
+    cursor.execute(f'SELECT schools.name_school, grades.number_grade, grades.school_id, '
+                   f'grades.grade_id FROM schools, grades '
+                   f'WHERE grades.school_id = schools.school_id')
+    result_str = ''
+    for i in cursor.fetchall():
+        result_str += i[0] + ' Класс - ' + i[1] + ' Код - ' + i[2] + i[3] + '\n'
+    return result_str
+
+
 def get_list_of_schools():  # получение всех школ участвующих в проекте
     cursor.execute(f'SELECT name_school FROM schools')
     result_str = ''
@@ -40,21 +58,24 @@ def get_grade(id):    # получение инфы о одном каком-л�
     answer = cursor.fetchall()
     if len(answer) == 0:  # если класс введен неверно, выходим
         return None
-    cursor.execute(f'SELECT * FROM grades WHERE grade_id = {grade_id}')  # получаем нужный класс
+    cursor.execute(f'SELECT * FROM grades WHERE grade_id = "{grade_id}"')  # получаем нужный класс
     ls_of_result = []   # создаем список, чтоб пихать туда весь собранный резуль, а именно:
     # расписание, учеников
     answer = cursor.fetchall()
     ls_of_result.append(answer[0])
     cursor.execute(f'SELECT * FROM timetable WHERE school_id = "{school_id}" '
                    f'AND grade_id = "{grade_id}"')
-    answer = list(cursor.fetchall()[0][2:])
     try:
-        answer[0] = 'Понедельник:\n' + answer[0]
-        answer[1] = 'Вторник:\n' + answer[1]
-        answer[2] = 'Среда:\n' + answer[2]
-        answer[3] = 'Четверг:\n' + answer[3]
-        answer[4] = 'Пятница:\n' + answer[4]
-        answer[5] = 'Суббота:\n' + answer[5]
+        answer = list(cursor.fetchall()[0][2:])
+    except:
+        return None
+    try:
+        answer[0] = 'Понедельник\n' + answer[0]
+        answer[1] = 'Вторник\n' + answer[1]
+        answer[2] = 'Среда\n' + answer[2]
+        answer[3] = 'Четверг\n' + answer[3]
+        answer[4] = 'Пятница\n' + answer[4]
+        answer[5] = 'Суббота\n' + answer[5]
     except TypeError:
         answer = 'Полного расписания нет.'
     # настраиваем расписание
@@ -109,7 +130,7 @@ def get_all_timetable():
                    f'AND grade_id = "{grade_id}"')
     answer = list(cursor.fetchall()[0][2:])
     try:
-        answer[0] = 'Понедельник:\n' + answer[0]
+        answer[0] = 'Понедельник\n' + answer[0]
         answer[1] = 'Вторник:\n' + answer[1]
         answer[2] = 'Среда:\n' + answer[2]
         answer[3] = 'Четверг:\n' + answer[3]
@@ -124,11 +145,14 @@ def get_all_timetable():
 def get_desk():  # получение доски объявления выбранного класса
     school_id, grade_id = dict_of_data.get("school_id"), dict_of_data.get("grade_id")
     cursor.execute(f'SELECT * FROM grades WHERE grade_id = "{grade_id}" AND school_id = "{school_id}"')
-    return cursor.fetchall()[0][6]
+    result = cursor.fetchall()[0][6]
+    if result == '-1':
+        return 'Лента новостей пуста'
+    return result
 
 
 def get_afisha():  # получение афишы всей школы
-    cursor.execute(f'SELECT * FROM schools WHERE school_id = {dict_of_data.get("school_id")}')
+    cursor.execute(f'SELECT * FROM schools WHERE school_id = "{dict_of_data.get("school_id")}"')
     return cursor.fetchall()[0][3]
 
 
@@ -139,7 +163,7 @@ def get_marks(id):
     # получаем код ученика, школу, класс, его уч id
     cursor.execute(f'SELECT name_of_subject, mark FROM marks '
                    f'WHERE school_id = "{school_id}" AND grade_id = "{grade_id}" AND '
-                   f'stud_id = {stud_id}')
+                   f'stud_id = "{stud_id}"')
     pre_marks = cursor.fetchall()
     # получение всех оценок заданного ученика
     if len(pre_marks) == 0:
@@ -220,6 +244,8 @@ def magazine():
 
 def set_mark(mark):
     # установка оценки
+    if not mark.isdigit():
+        return False
     login, grade = dict_of_data.get('login'), dict_of_data.get('grade')
     cursor.execute(f'SELECT grade_id FROM grades '  # получаем айди класса, из его номера
                    f'WHERE school_id = "{login[:3]}" AND number_grade = "{grade}"')
@@ -231,6 +257,7 @@ def set_mark(mark):
                    f'VALUES ("{login[:3]}", "{grade_id}", "{stud_id}", "{cursor.fetchall()[0][0]}", "{mark}")')
     # из полученных данных в инфо, выбираем предмет, айди студа и ставим в него оценку
     conn.commit()
+    return True
 
 
 def check_ad(id_ad):
@@ -312,6 +339,9 @@ def new_teacher_schoold_id(new_id):
     if len(new_id) != 3:
         return False
     login = dict_of_data.get('login')
+    cursor.execute(f'SELECT * FROM schools WHERE school_id = "{new_id}"')   # если нет школ с новым id
+    if len(cursor.fetchall()) == 0:
+        return
     cursor.execute(f'SELECT name_of_subject FROM teachers WHERE school_id = "{login[:3]}"'  # взятие предмета учителя 
                    f'AND teacher_id = "{login[3:]}"')
     subject = cursor.fetchall()
@@ -555,8 +585,8 @@ def set_grade_name_teacher(name_of_teacher):
 
 
 def set_code(code):
-    if len(code) > 63 or code.isalnum():
-        if code.isdigit() is False:
+    if len(code) > 45 or code.find('https://t.me/joinchat/') == -1:
+        if code != '-1':
             return False
     school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
     cursor.execute(
@@ -564,7 +594,7 @@ def set_code(code):
     if len(cursor.fetchall()) == 0:
         return False
     cursor.execute(
-        f'UPDATE grades SET invite_url = {code} WHERE school_id = "{school_id}" AND grade_id = "{grade_id}"')
+        f'UPDATE grades SET invite_url = "{code}" WHERE school_id = "{school_id}" AND grade_id = "{grade_id}"')
     conn.commit()
     return True
 
@@ -581,10 +611,14 @@ def set_desk(text):
     # махинация для добавления новости, и удалений старых
     cursor.execute(f'SELECT bulletin_board FROM grades WHERE school_id = "{school_id}" AND grade_id = "{grade_id}"')
     news = cursor.fetchall()[0][0]
-    news += '\n\n\n' + text
-    while len(news) > 1023:
-        news = news[news.find('\n\n\n'):]   # режем старые, если кончилось место
-
+    if news.find('Новая доска') == 0:
+        news = text
+    else:
+        news += '\n\n\n' + text
+        while len(news) > 1023:
+            news = news[news.find('\n\n\n'):]   # режем старые, если кончилось место
+    if text == '-1':
+        news = 'Доска объявлений пуста.'
     cursor.execute(
         f'UPDATE grades SET bulletin_board = "{news}" WHERE school_id = "{school_id}" AND grade_id = "{grade_id}"')
     conn.commit()
@@ -669,9 +703,48 @@ def set_news(news):
     return True
 
 
-def get_ad():
+def get_ad():   # возвращаем всю рекламку
     cursor.execute(f'SELECT * FROM res')
     return cursor.fetchall()
+
+
+def get_invite_url():   # возвращаем ссылку приглос
+    school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
+    cursor.execute(f'SELECT invite_url FROM grades WHERE school_id = "{school_id}" AND grade_id = "{grade_id}"')
+    url = cursor.fetchall()[0][0]
+    if url == '-1':
+        return 'Ссылки-приглашения не существует.'
+    return url
+
+
+def delete_school():
+    school_id = dict_of_data.get('school_id')
+    cursor.execute(f'DELETE FROM schools WHERE school_id = "{school_id}"')
+    conn.commit()
+    cursor.execute(f'DELETE FROM grades WHERE school_id = "{school_id}"')
+    conn.commit()
+    cursor.execute(f'DELETE FROM students WHERE school_id = "{school_id}"')
+    conn.commit()
+    cursor.execute(f'DELETE FROM timetable WHERE school_id = "{school_id}"')
+    conn.commit()
+    cursor.execute(f'DELETE FROM homework WHERE school_id = "{school_id}"')
+    conn.commit()
+    cursor.execute(f'DELETE FROM marks WHERE school_id = "{school_id}"')
+    conn.commit()
+
+
+def delete_grade():
+    school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
+    cursor.execute(f'DELETE FROM grades WHERE school_id = "{school_id}" AND grade_id = "{grade_id}"')
+    conn.commit()
+    cursor.execute(f'DELETE FROM marks WHERE school_id = "{school_id}" AND grade_id = "{grade_id}"')
+    conn.commit()
+    cursor.execute(f'DELETE FROM students WHERE school_id = "{school_id}" AND grade_id = "{grade_id}"')
+    conn.commit()
+    cursor.execute(f'DELETE FROM timetable WHERE school_id = "{school_id}" AND grade_id = "{grade_id}"')
+    conn.commit()
+    cursor.execute(f'DELETE FROM homework WHERE school_id = "{school_id}" AND grade_id = "{grade_id}"')
+    conn.commit()
 
 
 if __name__ == '__main__':
