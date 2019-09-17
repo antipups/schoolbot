@@ -31,7 +31,7 @@ def board():
     fourth_button = types.KeyboardButton(text='Классный чат')
     markup.add(third_button, fourth_button)
     markup.add(types.KeyboardButton(text='Афиша, новости'),
-               types.KeyboardButton(text='Добашнее задание'))
+               types.KeyboardButton(text='Домашнее задание'))
     markup.add(types.KeyboardButton(text='Личный кабинет'),
                types.KeyboardButton(text='Отмена'))
     return markup
@@ -893,7 +893,7 @@ def text(message):
     elif text == 'Афиша, новости':
         bot.send_message(chat_id, data.get_afisha())
 
-    elif text == 'Добашнее задание':
+    elif text == 'Домашнее задание':
         bot.send_message(chat_id, data.print_hw())
 
     elif text == 'Личный кабинет':

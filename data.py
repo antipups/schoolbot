@@ -1,5 +1,4 @@
 import mysql.connector
-import requests
 import datetime
 
 TOKEN = '914271777:AAGrCkpUMSUKOeg0VOh06eyz-XF-gXxQa34'
@@ -289,7 +288,7 @@ def change_id(stud_id):
         return False
     school_id = dict_of_data.get('school_id')
     grade_id = dict_of_data.get('grade_id')
-    old_stud_id = dict_of_data.get('last_stud_id')
+    old_stud_id = dict_of_data.get('last_stud_id')[:3]  # режим от edit, так как пометка на инлайн
     cursor.execute(f'SELECT * FROM students WHERE stud_id = "{stud_id}" AND school_id = "{school_id}" '
                    f'AND grade_id = "{grade_id}"')
     if cursor.fetchall():   # если id занят или ещё что-то не так
