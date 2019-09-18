@@ -382,8 +382,7 @@ def days_tt():  # клавиатурка для расписания
     markup.add(types.KeyboardButton(text='Понедельник'), types.KeyboardButton(text='Вторник'))
     markup.add(types.KeyboardButton(text='Среда'), types.KeyboardButton(text='Четверг'))
     markup.add(types.KeyboardButton(text='Пятница'), types.KeyboardButton(text='Суббота'))
-    markup.add(types.KeyboardButton(text='Отмена'),
-               types.KeyboardButton(text='Назад в админ. меню'))
+    markup.add(types.KeyboardButton(text='Назад в админ. меню'))
     return markup
 
 
@@ -498,6 +497,13 @@ def change_id_teacher(message):
     else:
         data.dict_of_data['login'] = message.text   # вывод инфы о учителе
         info = list(info)
+        for i in info:
+            if i is None:
+                msg = bot.send_message(chat_id, 'Учитель создан неправильно, он удален, '
+                                                'пересоздайте его, или же, введите новый ID:')
+                data.delete_teacher()
+                bot.register_next_step_handler(msg, change_id_teacher)
+                return
         info[0] = 'Код школы: ' + info[0]
         info[1] = 'Код учителя: ' + info[1]
         info[2] = 'Пароль учителя: ' + info[2]
