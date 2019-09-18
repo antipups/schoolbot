@@ -67,7 +67,7 @@ def second_step(message):
     name_of_day, timetable = name_of_day[:name_of_day.find('\n')], name_of_day[name_of_day.find('\n'):]
     bot.send_message(chat_id,
                      'Классный руководитель:\n' + grade[0][4] +
-                     f'\n\nРасписание на {name_of_day} {datetime.datetime.now().strftime("%d.%m.%Y")}:' + timetable,
+                     '\n\nРасписание на {} {}:'.format(name_of_day, datetime.datetime.now().strftime("%d.%m.%Y")) + timetable,
                      reply_markup=board())
 
 
@@ -467,8 +467,8 @@ def accept_id(message):
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.change_id(message.text):
-        bot.send_message(chat_id, f'Операция успешно завершена.\n'
-                                  f'ID ученика - {message.text}.')
+        bot.send_message(chat_id, 'Операция успешно завершена.\n'
+                                  'ID ученика - {}.'.format(message.text))
     else:
         msg = bot.send_message(chat_id, 'Выбранный ID не подходит, попробуйте другой, '
                                         'или нажмите кнопку *Назад*:')
@@ -516,7 +516,7 @@ def change_school_teacher(message):
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.new_teacher_schoold_id(message.text):
-        bot.send_message(chat_id, f'Операция успешно завершена, новый ID школы учителя - {message.text}.')
+        bot.send_message(chat_id, 'Операция успешно завершена, новый ID школы учителя - {}.'.format(message.text))
     else:
         msg = bot.send_message(chat_id, 'Выбранный ID не подходит, введите его ещё раз,'
                                         ' или кликните на кнопку *Назад* для выхода')
@@ -529,7 +529,7 @@ def change_teacher_id(message):
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.new_teacher_id(message.text):
-        bot.send_message(chat_id, f'Операция успешно завершена, новый учительский ID - {message.text}')
+        bot.send_message(chat_id, 'Операция успешно завершена, новый учительский ID - {}'.format(message.text))
     else:
         msg = bot.send_message(chat_id, 'Выбранный ID не подходит, введите его ещё раз,'
                                         ' или кликните на кнопку *Назад* для выхода')
@@ -542,7 +542,7 @@ def change_teacher_password(message):
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.new_teacher_password(message.text):
-        bot.send_message(chat_id, f'Операция успешно завершена, новый пароль - {message.text}.')
+        bot.send_message(chat_id, 'Операция успешно завершена, новый пароль - {}.'.format(message.text))
     else:
         msg = bot.send_message(chat_id, 'Пароль не может быть таким, введите другой:')
         bot.register_next_step_handler(msg, change_teacher_password)
@@ -554,7 +554,7 @@ def change_teacher_subj(message):
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.new_teacher_subj(message.text):
-        bot.send_message(chat_id, f'Операция успешно завершена, установленый предмет - {message.text}.')
+        bot.send_message(chat_id, 'Операция успешно завершена, установленый предмет - {}.'.format(message.text))
     else:
         msg = bot.send_message(chat_id, 'Этот предмет преподает другой учитель, введите новый:')
         bot.register_next_step_handler(msg, change_teacher_subj)
@@ -579,8 +579,8 @@ def new_title_of_school(message):
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_title_of_school(message.text):
-        msg = bot.send_message(chat_id, f'Название школы - {message.text} установлено,'
-                                        f' введите новости школы, если нет то -1:')
+        msg = bot.send_message(chat_id, 'Название школы - {} установлено,'
+                                        ' введите новости школы, если нет то -1:'.format(message.text))
         bot.register_next_step_handler(msg, new_afisha_of_school)
     else:
         msg = bot.send_message(chat_id, 'Введенное название существует, попробуйте ввести другое:')
@@ -633,8 +633,8 @@ def set_number(message):
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_number(message.text):
-        msg = bot.send_message(chat_id, f'Номер - {message.text} установлен, '
-                                        f'пришлите фотографию классного руководителя:')
+        msg = bot.send_message(chat_id, 'Номер - {} установлен, '
+                                        'пришлите фотографию классного руководителя:'.format(message.text))
         bot.register_next_step_handler(msg, set_photo)
     else:
         msg = bot.send_message(chat_id, 'Введенный номер не подходит, введите новый:')
@@ -680,8 +680,8 @@ def set_grade_name_teacher(message):
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_grade_name_teacher(message.text):
-        msg = bot.send_message(chat_id, f'Имя классного руководителя, а именно - {message.text} установлено,'
-                                        ' введите код беседы (если нет то -1):')
+        msg = bot.send_message(chat_id, 'Имя классного руководителя, а именно - {} установлено,'
+                                        ' введите код беседы (если нет то -1):'.format(message.text))
         bot.register_next_step_handler(msg, set_code)
     else:
         msg = bot.send_message(chat_id, 'Введеное имя не подходит, введите новое:')
@@ -733,7 +733,7 @@ def create_stud(message):
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.create_stud(message.text):
-        msg = bot.send_message(chat_id, f'Имя - {message.text} установлено, введите ID нового ученика:')
+        msg = bot.send_message(chat_id, 'Имя - {} установлено, введите ID нового ученика:'.format(message.text))
         bot.register_next_step_handler(msg, set_stud_id)
     else:
         msg = bot.send_message(chat_id, 'Введенное имя не подходит, введите новое:')
@@ -819,7 +819,7 @@ def pre_edit_school(message):
     if data.get_school(message.text):
         bot.send_message(chat_id, 'Редактировать:', reply_markup=edit_school())
     else:
-        msg = bot.send_message(chat_id, 'Школы с введенным id не найдено, введите ещё раз id:')
+        msg = bot.send_message(chat_id, 'Школы с введенным ID не найдено, введите ещё раз ID:')
         bot.register_next_step_handler(msg, pre_edit_school)
 
 
