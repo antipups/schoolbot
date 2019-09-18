@@ -1,5 +1,4 @@
 import time
-
 import requests
 import telebot
 from telebot import types
@@ -47,7 +46,7 @@ def cancel_key():
 
 def second_step(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:            # ЕСЛИ НАДО БУДЕТ ОТМЕНИТЬ ВТОРУЮ РЕКЛАМУ
+    if message.text.lower() == data.cancel_word:
         bot.send_message(chat_id, 'Операция отменена.', reply_markup=cancel_key())
         return
     with open(data.get_res('картинка2'), 'rb') as f:
@@ -939,7 +938,7 @@ def set_desk2(message):
 
 
 def edit_admin():   # клавиатурка админа
-    markup = types.ReplyKeyboardMarkup()
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.KeyboardButton(text='Реклама'))
     markup.add(types.KeyboardButton(text='Школа'),
                types.KeyboardButton(text='Класс.'))
@@ -951,7 +950,7 @@ def edit_admin():   # клавиатурка админа
 
 
 def create_admin():   # клавиатурка админа на создание
-    markup = types.ReplyKeyboardMarkup()
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.KeyboardButton(text='Школу'),
                types.KeyboardButton(text='Класс'))
     markup.add(types.KeyboardButton(text='Ученика'),
