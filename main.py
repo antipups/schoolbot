@@ -345,7 +345,7 @@ def change_banner(message):  # установка нового банера
     if message.text == data.back_word:
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
-    path = 'img\\' + data.dict_of_data.get('ad') + '.jpg'
+    path = data.dict_of_data.get('ad') + '.jpg'
     if message.json.get('document') is None:
         if message.json.get('photo') is None:
             msg = bot.send_message(chat_id, 'Введенная фотография не подходит, введите новую:')
@@ -575,7 +575,7 @@ def create_school(message):
         msg = bot.send_message(chat_id, 'Школа успешно созданна, введите название новой школы:')
         bot.register_next_step_handler(msg, new_title_of_school)
     else:
-        msg = bot.send_message(chat_id, 'Введенный ID не подходит, попробуйте ещё раз:')
+        msg = bot.send_message(chat_id, 'Школа с таким ID уже существует. введите другой:')
         bot.register_next_step_handler(msg, create_school)
 
 
@@ -654,7 +654,7 @@ def set_photo(message):
         return
 
     school_id, grade_id = data.dict_of_data.get('school_id'), data.dict_of_data.get('grade_id')
-    path = 'img\\' + school_id + grade_id + '.png'
+    path = school_id + grade_id + '.png'
     if message.json.get('document') is None:
         if message.json.get('photo') is None:
             msg = bot.send_message(chat_id, 'Введенная фотография не подходит, введите новую:')
@@ -894,7 +894,7 @@ def photo_grade_teacher(message):
         return
 
     school_id, grade_id = data.dict_of_data.get('school_id'), data.dict_of_data.get('grade_id')
-    path = 'img\\' + school_id + grade_id + '.png'
+    path = school_id + grade_id + '.png'
     if message.json.get('document') is None:
         if message.json.get('photo') is None:
             msg = bot.send_message(chat_id, 'Введенная фотография не подходит, введите новую:')

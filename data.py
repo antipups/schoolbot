@@ -168,7 +168,10 @@ def get_marks(id):
     # получение всех оценок заданного ученика
     if len(pre_marks) == 0:
         return None
-    marks = ''
+    cursor.execute('SELECT name FROM students '
+                   'WHERE school_id = "{}" AND grade_id = "{}" AND '
+                   'stud_id = "{}"'.format(school_id, grade_id, stud_id))
+    marks = 'Дневник ' + cursor.fetchall()[0][0] + ':\n'
     dict_of_temp = {}
     for i in pre_marks:     # делаем читабельную строку для нормального вывода
         if dict_of_temp.get(i[0]) is None:
@@ -237,9 +240,12 @@ def magazine():
     # получение списка всех студентов
     ls_of_result = []
     for i in cursor.fetchall():
-        ls_of_result.append(i[1] + ':' + i[0])
+        name_of_stud = i[0]
+        name_of_stud = name_of_stud[:name_of_stud.find(' ') + 2] + '.'
+        ls_of_result.append(i[1] + ':' + name_of_stud)
         dict_of_data['stud_id'].append(i[0])
         # выбираем учеников и их оценки по предмету
+    print(ls_of_result)
     return ls_of_result
 
 
@@ -390,7 +396,7 @@ def new_teacher_password(new_password):
 
 
 def new_teacher_subj(subj):
-    if len(subj) > 15:
+    if len(subj) > 31:
         return False
     login = dict_of_data.get('login')
     cursor.execute('SELECT name_of_subject FROM teachers '
