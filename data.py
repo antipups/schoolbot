@@ -763,5 +763,43 @@ def delete_grade():
     conn.commit()
 
 
+def import_stud(new_students):
+    failure_result = ''
+    while new_students.find(', ') > -1:
+        school_id = new_students[:new_students.find(', ')]
+        new_students = new_students[new_students.find(', ') + 2:]
+        grade_id = new_students[:new_students.find(', ')]
+        new_students = new_students[new_students.find(', ') + 2:]
+        name = new_students[:new_students.find(', ')]
+        new_students = new_students[new_students.find(', ') + 2:]
+        if new_students.find('\n') > -1:
+            stud_id = new_students[:new_students.find('\n') - 1]
+            new_students = new_students[new_students.find('\n') + 1:]
+        else:
+            stud_id = new_students
+        print(school_id, grade_id, name, stud_id)
+        print(len(school_id), len(grade_id), len(name), len(stud_id))
+        if len(school_id) != 3 or len(grade_id) != 3 or len(name) > 31 or len(stud_id) != 3:
+            failure_result += 'Ученик не ипортирован - ' + school_id + ' ' + grade_id + ' ' \
+                              + name + ' ' + stud_id + ' -- так как ученик введен не по форме;\n'
+            continue
+
+        cursor.execute('SELECT * FROM students WHERE school_id = "{}" AND grade_id = "{}" '
+                       'AND stud_id = "{}"'.format(school_id, grade_id, stud_id))
+
+        if cursor.fetchall():
+            failure_result += 'Ученик не ипортирован - ' + school_id + ' ' + grade_id + ' ' + name \
+                              + ' ' + stud_id + ' -- данный ученик уже есть в базе;\n'
+            continue
+        else:
+            failure_result += 'Ученик ИМПОРТИРОВАН - ' + school_id + ' ' + grade_id + ' ' + name \
+                              + ' ' + stud_id + '\n'
+
+        cursor.execute('INSERT INTO students (school_id, grade_id, name, stud_id) VALUES '
+                       '("{}", "{}", "{}", "{}")'.format(school_id, grade_id, name, stud_id))
+        conn.commit()
+    return failure_result
+
+
 if __name__ == '__main__':
     pass
