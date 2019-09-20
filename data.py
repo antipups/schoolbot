@@ -765,29 +765,30 @@ def delete_grade():
 
 def import_stud(new_students):
     failure_result = ''
-    while new_students.find(', ') > -1:
-        school_id = new_students[:new_students.find(', ')]
+    while new_students.find(', ') > -1: # цикл бежит по строкам
+        school_id = new_students[:new_students.find(', ')]  # получаем скул id
         new_students = new_students[new_students.find(', ') + 2:]
-        grade_id = new_students[:new_students.find(', ')]
+        grade_id = new_students[:new_students.find(', ')]   # получаем грейд id
         new_students = new_students[new_students.find(', ') + 2:]
-        name = new_students[:new_students.find(', ')]
+        name = new_students[:new_students.find(', ')]   # получаем имя
         new_students = new_students[new_students.find(', ') + 2:]
-        if new_students.find('\n') > -1:
+        # тут сравниваем, админ может быть криворучка, и ввести нечайно лишний энтер в конце файл
+        if new_students.find('\n') > -1:    # если не конец файла
             stud_id = new_students[:new_students.find('\n') - 1]
             new_students = new_students[new_students.find('\n') + 1:]
-        else:
+        else:   # если конец файла
             stud_id = new_students
-        print(school_id, grade_id, name, stud_id)
-        print(len(school_id), len(grade_id), len(name), len(stud_id))
-        if len(school_id) != 3 or len(grade_id) != 3 or len(name) > 31 or len(stud_id) != 3:
+        # print(school_id, grade_id, name, stud_id) # принт значений из файла
+        # print(len(school_id), len(grade_id), len(name), len(stud_id)) # принт их длины(для проверки)
+        if len(school_id) != 3 or len(grade_id) != 3 or len(name) > 31 or len(stud_id) != 3:    # если не по форме ученик
             failure_result += 'Ученик не ипортирован - ' + school_id + ' ' + grade_id + ' ' \
                               + name + ' ' + stud_id + ' -- так как ученик введен не по форме;\n'
             continue
 
-        cursor.execute('SELECT * FROM students WHERE school_id = "{}" AND grade_id = "{}" '
+        cursor.execute('SELECT * FROM students WHERE school_id = "{}" AND grade_id = "{}" '     # проверяем есть ли такой уже в базе
                        'AND stud_id = "{}"'.format(school_id, grade_id, stud_id))
 
-        if cursor.fetchall():
+        if cursor.fetchall():   # если такой в базе есть, выкидываем ошибку
             failure_result += 'Ученик не ипортирован - ' + school_id + ' ' + grade_id + ' ' + name \
                               + ' ' + stud_id + ' -- данный ученик уже есть в базе;\n'
             continue
