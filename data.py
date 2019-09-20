@@ -883,7 +883,7 @@ def import_timetable(new_timetable):
             sat = new_timetable
 
         data_of_timetable = school_id + " " + grade_id + " " + mon + " " + tue + " " + wed + " " + thu + " " + fri + " " + sat
-
+        # делаем отступы + приводим в порядок
         mon = mon.replace(';', '\n') + '\n'
         tue = tue.replace(';', '\n') + '\n'
         wed = wed.replace(';', '\n') + '\n'
@@ -891,16 +891,18 @@ def import_timetable(new_timetable):
         fri = fri.replace(';', '\n') + '\n'
         sat = sat.replace(';', '\n') + '\n'
 
-        print(data_of_timetable)
-
-        if len(mon) > 127 or len(tue) > 127 or len(wed) > 127 or len(thu) > 127 or len(fri) > 127 or len(sat) > 127:
+        if len(school_id) != 3 or len(grade_id) != 3 or len(mon) > 127 or len(tue) > 127 or len(wed) > 127 or len(thu) > 127 or len(fri) > 127 or len(sat) > 127:
+            failure_result += 'Расписание - ' + data_of_timetable + ' -- не импортировано ' \
+                                                                    'так как написано не в том формате;\n'
+            continue
+        if len(mon) < 1 or len(tue) < 1 or len(wed) < 1 or len(thu) < 1 or len(fri) < 1 or len(sat) < 1:
             failure_result += 'Расписание - ' + data_of_timetable + ' -- не импортировано ' \
                                                                     'так как написано не в том формате;\n'
             continue
 
-        print(school_id, grade_id)
         cursor.execute('SELECT * FROM timetable WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))
 
+        print(data_of_timetable)
         if cursor.fetchall():   # если класс уже был в бд
             failure_result += 'Расписание - ' + data_of_timetable + ' -- ИМПОРТИРОВАНО ' \
                                                                     'и ОБНОВЛЕННО;\n'
