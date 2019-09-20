@@ -305,6 +305,7 @@ def choose():
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
     markup.add(types.KeyboardButton(text='Создать'),
                types.KeyboardButton(text='Редактировать'))
+    markup.add(types.KeyboardButton(text='Импорт'))
     return markup
 
 
@@ -973,6 +974,13 @@ def edit_baner(ls_of_buttons):
     return markup
 
 
+def import_menu():
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    markup.add(types.KeyboardButton(text='Ученики'), types.KeyboardButton(text='Преподователей'))
+    markup.add(types.KeyboardButton(text='Расписания'))
+    return markup
+
+
 @bot.message_handler(content_types=['text'])
 def text(message):
     chat_id = message.from_user.id
@@ -1003,6 +1011,9 @@ def text(message):
     elif text == '🚪Личный кабинет':
         msg = bot.send_message(chat_id, 'Введите персональный код ученика (до 3-ёх символов):')
         bot.register_next_step_handler(msg, person_room)
+
+    if chat_id not in data.dict_of_admins.keys():
+        return
 
     elif text == 'Создать':     # меню создания
         bot.send_message(chat_id, 'Выберите что именно вы хотите создать:', reply_markup=create_admin())
@@ -1079,6 +1090,10 @@ def text(message):
         msg = bot.send_message(chat_id, 'Введите код преподователя (до 7-и символов),'
                                         ' который хотите изменить:')
         bot.register_next_step_handler(msg, change_id_teacher)
+
+    elif text == 'Импорт':
+        bot.send_message(chat_id, 'Выберите что вы хотите импортировать нажав на соответствующую кнопку:',
+                         reply_markup=import_menu())
 
 
 if __name__ == '__main__':

@@ -245,7 +245,6 @@ def magazine():
         ls_of_result.append(i[1] + ':' + name_of_stud)
         dict_of_data['stud_id'].append(i[0])
         # выбираем учеников и их оценки по предмету
-    print(ls_of_result)
     return ls_of_result
 
 
