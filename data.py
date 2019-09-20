@@ -42,8 +42,11 @@ def get_list_of_grades_for_admin():     # получение всех класс
 
 def get_list_of_schools():  # получение всех школ участвующих в проекте
     cursor.execute('SELECT name_school FROM schools')
+    schools = cursor.fetchall()
+    if not schools:
+        return 'На данный момент школ участвующих в проекте нет.'
     result_str = ''
-    for i in cursor.fetchall():
+    for i in schools:
         result_str += i[0] + '\n'
     return result_str
 
@@ -799,6 +802,118 @@ def import_stud(new_students):
         cursor.execute('INSERT INTO students (school_id, grade_id, name, stud_id) VALUES '
                        '("{}", "{}", "{}", "{}")'.format(school_id, grade_id, name, stud_id))
         conn.commit()
+    return failure_result
+
+
+def import_teach(new_teachers):
+    # print(new_teachers)
+    failure_result = ''
+    while new_teachers.find(', ') > -1:  # цикл бежит по строкам
+        school_id = new_teachers[:new_teachers.find(', ')]
+        new_teachers = new_teachers[new_teachers.find(', ') + 2:]
+        teacher_id = new_teachers[:new_teachers.find(', ')]
+        new_teachers = new_teachers[new_teachers.find(', ') + 2:]
+        password = new_teachers[:new_teachers.find(', ')]
+        new_teachers = new_teachers[new_teachers.find(', ') + 2:]
+        subject = new_teachers[:new_teachers.find(', ')]
+        new_teachers = new_teachers[new_teachers.find(', ') + 2:]
+        # тут сравниваем, админ может быть криворучка, и ввести нечайно лишний энтер в конце файл
+        if new_teachers.find('\n') > -1:  # если не конец файла
+            score = new_teachers[:new_teachers.find('\n') - 1]
+            new_teachers = new_teachers[new_teachers.find('\n') + 1:]
+        else:  # если конец файла
+            # print(new_teachers)
+            score = new_teachers
+
+        data_of_teacher = school_id + ' ' + teacher_id + ' ' + password + ' ' + subject + ' ' + score   # для уменьшения кол-ва кода
+
+        # print(data_of_teacher)
+        # print(len(school_id), len(teacher_id), len(password), len(subject), len(score))
+
+        if len(school_id) != 3 or len(teacher_id) > 4 or len(password) > 32 or len(subject) > 31 or len(score) > 9:  # если не по форме ученик
+            failure_result += 'Учитель не ипортирован - ' + data_of_teacher\
+                              + ' -- так как учитель введен не по форме;\n'
+            continue
+
+        cursor.execute(
+            'SELECT * FROM teachers WHERE school_id = "{}" AND teacher_id = "{}" '.format(school_id, teacher_id))  # проверяем есть ли такой уже в базе
+
+        if cursor.fetchall():
+            failure_result += 'Учитель не ипортирован - ' + data_of_teacher\
+                              + ' -- учитель с идентичными ID уже есть в базе;\n'
+            continue
+
+        cursor.execute('SELECT * FROM teachers WHERE school_id = "{}" AND name_of_subject = "{}"'.format(school_id, subject))
+
+        if cursor.fetchall():  # если такой в базе есть, выкидываем ошибку
+            failure_result += 'Учитель не ипортирован - ' + data_of_teacher\
+                              + ' -- данный учитель не подходит по предмету в данную школу;\n'
+            continue
+        else:
+            failure_result += 'Учитель ИМПОРТИРОВАН - ' + data_of_teacher + '\n'
+
+        cursor.execute('INSERT INTO teachers (school_id, teacher_id, password, name_of_subject, score) VALUES '
+                       '("{}", "{}", "{}", "{}", "{}")'.format(school_id, teacher_id, password, subject, score))
+        conn.commit()
+    return failure_result
+
+
+def import_timetable(new_timetable):
+    failure_result = ''
+    while new_timetable.find(', ') > -1:  # цикл бежит по строкам
+        school_id = new_timetable[:new_timetable.find(', ')]
+        new_timetable = new_timetable[new_timetable.find(', ') + 2:]
+        grade_id = new_timetable[:new_timetable.find(', ')]
+        new_timetable = new_timetable[new_timetable.find(', ') + 2:]
+        mon = new_timetable[:new_timetable.find(', ')]
+        new_timetable = new_timetable[new_timetable.find(', ') + 2:]
+        tue = new_timetable[:new_timetable.find(', ')]
+        new_timetable = new_timetable[new_timetable.find(', ') + 2:]
+        wed = new_timetable[:new_timetable.find(', ')]
+        new_timetable = new_timetable[new_timetable.find(', ') + 2:]
+        thu = new_timetable[:new_timetable.find(', ')]
+        new_timetable = new_timetable[new_timetable.find(', ') + 2:]
+        fri = new_timetable[:new_timetable.find(', ')]
+        new_timetable = new_timetable[new_timetable.find(', ') + 2:]
+        if new_timetable.find('\n') > -1:  # если не конец файла
+            sat = new_timetable[:new_timetable.find('\n') - 1]
+            new_timetable = new_timetable[new_timetable.find('\n') + 1:]
+        else:  # если конец файла
+            # print(new_teachers)
+            sat = new_timetable
+
+        data_of_timetable = school_id + " " + grade_id + " " + mon + " " + tue + " " + wed + " " + thu + " " + fri + " " + sat
+
+        mon = mon.replace(';', '\n') + '\n'
+        tue = tue.replace(';', '\n') + '\n'
+        wed = wed.replace(';', '\n') + '\n'
+        thu = thu.replace(';', '\n') + '\n'
+        fri = fri.replace(';', '\n') + '\n'
+        sat = sat.replace(';', '\n') + '\n'
+
+        print(data_of_timetable)
+
+        if len(mon) > 127 or len(tue) > 127 or len(wed) > 127 or len(thu) > 127 or len(fri) > 127 or len(sat) > 127:
+            failure_result += 'Расписание - ' + data_of_timetable + ' -- не импортировано ' \
+                                                                    'так как написано не в том формате;\n'
+            continue
+
+        print(school_id, grade_id)
+        cursor.execute('SELECT * FROM timetable WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))
+
+        if cursor.fetchall():   # если класс уже был в бд
+            failure_result += 'Расписание - ' + data_of_timetable + ' -- ИМПОРТИРОВАНО ' \
+                                                                    'и ОБНОВЛЕННО;\n'
+            cursor.execute('UPDATE timetable SET mon = "{}", tue = "{}", wed = "{}", thu = "{}", '
+                           'fri = "{}", sat = "{}" WHERE school_id = "{}" AND '
+                           'grade_id = "{}"'.format(mon, tue, wed, thu, fri, sat, school_id, grade_id))
+            conn.commit()
+        else:
+            failure_result += 'Расписание - ' + data_of_timetable + ' -- ИМПОРТИРОВАНО успешно.\n'
+            cursor.execute('INSERT INTO timetable (school_id, grade_id, mon, tue, wed, thu, fri, sat) '
+                           'VALUES ("{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}")'.format(school_id, grade_id, mon, tue, wed, thu, fri, sat))
+            conn.commit()
+
     return failure_result
 
 

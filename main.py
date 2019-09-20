@@ -998,6 +998,41 @@ def import_stud(message):
     bot.send_message(chat_id, data.import_stud(requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(data.TOKEN, file_info.file_path)).content.decode('cp1251')))
 
 
+def import_teach(message):
+    chat_id = message.from_user.id
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
+        return
+
+    if message.json.get('document') is None:
+        msg = bot.send_message(chat_id, 'Введенный файл не подходит, введите новый (для выхода нажмите кнопку *Назад*):')
+        bot.register_next_step_handler(msg, import_teach)
+        return
+
+    file_id = message.json.get('document').get('file_id')
+    file_info = bot.get_file(file_id)
+    bot.send_message(chat_id, data.import_teach(requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(data.TOKEN, file_info.file_path)).content.decode('cp1251')))
+
+
+def import_timetable(message):
+    chat_id = message.from_user.id
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
+        return
+
+    if message.json.get('document') is None:
+        msg = bot.send_message(chat_id,
+                               'Введенный файл не подходит, введите новый (для выхода нажмите кнопку *Назад*):')
+        bot.register_next_step_handler(msg, import_timetable)
+        return
+
+    file_id = message.json.get('document').get('file_id')
+    file_info = bot.get_file(file_id)
+    bot.send_message(chat_id, data.import_timetable(
+        requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(data.TOKEN, file_info.file_path)).content.decode(
+            'cp1251')))
+
+
 @bot.message_handler(content_types=['text'])
 def text(message):
     chat_id = message.from_user.id
@@ -1117,10 +1152,12 @@ def text(message):
         bot.register_next_step_handler(msg, import_stud)
 
     elif text == 'Преподователей.':
-        bot.send_message(chat_id, text)
+        msg = bot.send_message(chat_id, 'Перенесите в чат текстовый файл с преподователями')
+        bot.register_next_step_handler(msg, import_teach)
 
     elif text == 'Расписания':
-        bot.send_message(chat_id, text)
+        msg = bot.send_message(chat_id, 'Перенесите в чат текстовый файл с расписанием')
+        bot.register_next_step_handler(msg, import_timetable)
 
 
 if __name__ == '__main__':
