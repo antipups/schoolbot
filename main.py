@@ -1035,6 +1035,37 @@ def import_timetable(message):
             'cp1251')))
 
 
+def export_menu():
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
+    markup.add(types.KeyboardButton(text='учеников'), types.KeyboardButton(text='учителей'))
+    markup.add(types.KeyboardButton(text='Назад в админ.меню'))
+    return markup
+
+
+def export_students(message):
+    chat_id = message.from_user.id
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
+        return
+
+    data.export_students()  # создаем файл
+    with open('temp_file.txt', 'rb') as f:
+        bot.send_document(chat_id, f)  # отсылаем его
+    os.remove('temp_file.txt')  # удаляем его
+
+
+def export_teachers(message):
+    chat_id = message.from_user.id
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
+        return
+
+    data.export_teachers()  # создаем файл
+    with open('temp_file.txt', 'rb') as f:
+        bot.send_document(chat_id, f)  # отсылаем его
+    os.remove('temp_file.txt')  # удаляем его
+
+
 @bot.message_handler(content_types=['text'])
 def text(message):
     chat_id = message.from_user.id
@@ -1067,6 +1098,10 @@ def text(message):
         bot.register_next_step_handler(msg, person_room)
 
     if chat_id not in data.dict_of_admins.keys():   # далее проход только админам
+        return
+
+    if message.text.lower() == data.back_word:
+        bot.send_message(chat_id, 'Операция отменена.')
         return
 
     elif text == 'Создать':     # меню создания
@@ -1162,10 +1197,13 @@ def text(message):
         bot.register_next_step_handler(msg, import_timetable)
 
     elif text == 'Экспорт':
-        data.export_students()  # создаем файл
-        with open('temp_file.txt', 'rb') as f:
-            bot.send_document(chat_id, f)   # отсылаем его
-        os.remove('temp_file.txt')  # удаляем его
+        bot.send_message(chat_id, 'Выберите кого экспортировать:', reply_markup=export_menu())
+
+    elif text == 'учеников':
+        export_students(message)
+
+    elif text == 'учителей':
+        export_teachers(message)
 
 
 if __name__ == '__main__':

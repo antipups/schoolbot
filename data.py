@@ -933,7 +933,25 @@ def export_students():
             temp_ls = []
         result = tabulate(all_temp_ls, headers=['school_id', 'grade_id', 'name', 'stud_id'])    # делаем красивую табличку,
     else:
-        result = 'Учеников - нет'   # если учеников нет, так и пишем
+        result = 'Нет учеников'   # если учеников нет, так и пишем
+    with open('temp_file.txt', "w") as f:
+        f.write(result)
+
+
+def export_teachers():
+    cursor.execute('SELECT * FROM teachers')
+    result = cursor.fetchall()
+    if result:
+        temp_ls = []  # для помещения туда одного ученика
+        all_temp_ls = []  # для помещения туда всех учеников
+        for i in result:
+            for j in i:
+                temp_ls.append(j)
+            all_temp_ls.append(temp_ls)
+            temp_ls = []
+        result = tabulate(all_temp_ls, headers=['school_id', 'teacher_id', 'password', 'subject', 'score'])    # делаем красивую табличку,
+    else:
+        result = 'Нет учителей'   # если учеников нет, так и пишем
     with open('temp_file.txt', "w") as f:
         f.write(result)
 
