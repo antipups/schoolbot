@@ -4,6 +4,7 @@ import telebot
 from telebot import types
 import datetime
 import data
+import os
 
 
 bot = telebot.TeleBot(data.TOKEN)
@@ -305,7 +306,8 @@ def choose():
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
     markup.add(types.KeyboardButton(text='Создать'),
                types.KeyboardButton(text='Редактировать'))
-    markup.add(types.KeyboardButton(text='Импорт'))
+    markup.add(types.KeyboardButton(text='Импорт'),
+               types.KeyboardButton(text='Экспорт'))
     return markup
 
 
@@ -1158,6 +1160,12 @@ def text(message):
     elif text == 'Расписания':
         msg = bot.send_message(chat_id, 'Перенесите в чат текстовый файл с расписанием')
         bot.register_next_step_handler(msg, import_timetable)
+
+    elif text == 'Экспорт':
+        data.export_students()  # создаем файл
+        with open('temp_file.txt', 'rb') as f:
+            bot.send_document(chat_id, f)   # отсылаем его
+        os.remove('temp_file.txt')  # удаляем его
 
 
 if __name__ == '__main__':

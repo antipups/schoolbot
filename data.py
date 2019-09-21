@@ -1,5 +1,6 @@
 import mysql.connector
 import datetime
+from tabulate import tabulate
 
 TOKEN = '914271777:AAGrCkpUMSUKOeg0VOh06eyz-XF-gXxQa34'
 
@@ -917,6 +918,24 @@ def import_timetable(new_timetable):
             conn.commit()
 
     return failure_result
+
+
+def export_students():
+    cursor.execute('SELECT * FROM students')
+    result = cursor.fetchall()
+    if result:
+        temp_ls = []  # для помещения туда одного ученика
+        all_temp_ls = []  # для помещения туда всех учеников
+        for i in result:
+            for j in i:
+                temp_ls.append(j)
+            all_temp_ls.append(temp_ls)
+            temp_ls = []
+        result = tabulate(all_temp_ls, headers=['school_id', 'grade_id', 'name', 'stud_id'])    # делаем красивую табличку,
+    else:
+        result = 'Учеников - нет'   # если учеников нет, так и пишем
+    with open('temp_file.txt', "w") as f:
+        f.write(result)
 
 
 if __name__ == '__main__':
