@@ -1,3 +1,5 @@
+import random
+
 import mysql.connector
 import datetime
 from tabulate import tabulate
@@ -99,6 +101,31 @@ def trans(today, timetable):
     return timetable
 
 
+def get_homework(timetable):    # добавление к расписанию на завтра ДЗшки
+    result = timetable[:timetable.find('\n') + 1]
+    timetable = timetable[timetable.find('\n') + 1:]
+    while True:     # бежим по расписанию и сверяем его с бд, если есть ДЗ записываем его в новое раписание
+        if timetable.find('\n') != -1:  # если есть перено, режем до переноски
+            subject = timetable[:timetable.find('\n')]
+        else:
+            subject = timetable  # если предмет последний то не режем его
+        cursor.execute('SELECT homework FROM homework WHERE school_id = "{}" AND grade_id = "{}" AND '
+                       'subject = "{}"'.format(dict_of_data.get('school_id'), dict_of_data.get('grade_id'),
+                                               subject))    # получаем дз
+        try:
+            homework = cursor.fetchall()[0][0]  # есть ли дз по предмету
+        except IndexError:
+            result += subject + ' : Задания нет.'
+        else:
+            result += subject + ' : ' + homework
+        result += '\n'
+        if timetable.find('\n') + 1 == 0:
+            break   # если пробежались по всем предметам, выходим
+        else:
+            timetable = timetable[timetable.find('\n') + 1:]    # режем строку и следственно идем на некст предмет
+    return result
+
+
 def get_timetable_on_tomorrow():
     # получение расписание на след. день, или же завтра
     need_day = datetime.datetime.today()
@@ -125,6 +152,7 @@ def get_timetable_on_tomorrow():
                         'Thursday': 'Четверг', 'Friday': 'Пятница', 'Saturday': 'Суббота'}
         answer = answer[answer.find(dict_of_days.get(need_day)):]
         answer = answer[:answer.find('\n\n')]
+        answer = get_homework(answer)    # дополняем расписание дзшкой
         return answer
 
 
@@ -292,8 +320,8 @@ def set_tt(timetable, day):
     timetable += '\n'
     timetable = timetable.replace(';', '\n')
     school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
-    dict_of_days_rus = {'Понедельник': 'Mon', 'Вторник': 'Tue', 'Среда': 'Wed',  # для внесения в бд нового расписания(по колонкам дни на англ)
-                        'Четверг': 'Thu', 'Пятница': 'Fri', 'Суббота': 'Sat'}
+    dict_of_days_rus = {'Пн': 'Mon', 'Вт': 'Tue', 'Ср': 'Wed',  # для внесения в бд нового расписания(по колонкам дни на англ)
+                        'Чт': 'Thu', 'Пт': 'Fri', 'Сб': 'Sat'}
     cursor.execute('UPDATE timetable SET {} = "{}" '
                    'WHERE school_id = "{}" AND grade_id = "{}"'.format(dict_of_days_rus.get(day),
                                                                        timetable, school_id, grade_id))

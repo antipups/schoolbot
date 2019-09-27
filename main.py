@@ -1,3 +1,4 @@
+import random
 import time
 import requests
 import telebot
@@ -13,9 +14,9 @@ bot = telebot.TeleBot(data.TOKEN)
 @bot.message_handler(commands=['start'])
 def command_start(message):
     chat_id = message.from_user.id
-    with open(data.get_res('картинка1'), 'rb') as f:
+    with open(data.get_res('картинка' + str(random.randint(1, 5))), 'rb') as f:
         bot.send_photo(chat_id, f.read())  # получение второго банера рекламы
-    bot.send_message(chat_id, data.get_res('реклама1'))  # получение текста рекламы
+    bot.send_message(chat_id, data.get_res('реклама' + str(random.randint(1, 5))))  # получение текста рекламы
     bot.send_message(chat_id, data.get_list_of_schools())
     # получение всех школ участвующих в проекте
     msg = bot.send_message(chat_id, 'Введите индивидуальный код класса (до 6-ти символов):', reply_markup=cancel_key())
@@ -49,9 +50,9 @@ def second_step(message):
     if message.text.lower() == data.cancel_word:
         bot.send_message(chat_id, 'Операция отменена.', reply_markup=cancel_key())
         return
-    with open(data.get_res('картинка2'), 'rb') as f:
+    with open(data.get_res('картинка' + str(random.randint(1, 5))), 'rb') as f:
         bot.send_photo(chat_id, f.read())  # получение второго банера рекламы
-    bot.send_message(chat_id, data.get_res('реклама2'))  # получение второго текста рекламы
+    bot.send_message(chat_id, data.get_res('реклама' + str(random.randint(1, 5))))  # получение второго текста рекламы
 
     grade = data.get_grade(message.text)  # получаем всю информацию о классе для формы
     if grade is None:   # если школа не найдена
@@ -175,6 +176,9 @@ def person_room(message):   # комната школьника
         bot.register_next_step_handler(msg, person_room)
         return
     bot.send_message(chat_id, marks)   # выводим оценки
+    with open(data.get_res('картинка' + str(random.randint(1, 5))), 'rb') as f:
+        bot.send_photo(chat_id, f.read())  # получение второго банера рекламы
+    bot.send_message(chat_id, data.get_res('реклама' + str(random.randint(1, 5))))  # получение текста рекламы
 
 
 @bot.message_handler(commands=['room'])  # комната преподов
@@ -291,7 +295,7 @@ def accept(message):    # установка оценки,
         bot.send_message(chat_id, 'Операция отменена.')
         return
     if data.set_mark(message.text):
-        bot.send_message(chat_id, 'Оценка успешно установлена.')
+        bot.send_message(chat_id, 'Оценка успешно установлена, установленная оценка - {}.'.format(message.text))
     else:
         msg = bot.send_message(chat_id, 'Оценка не установлена, ввидите число:')
         bot.register_next_step_handler(msg, accept)
