@@ -1,5 +1,3 @@
-import random
-
 import mysql.connector
 import datetime
 from tabulate import tabulate
@@ -126,6 +124,20 @@ def get_homework(timetable):    # добавление к расписанию �
     return result
 
 
+def get_birthday():
+    today = datetime.datetime.now().strftime("%d%m")
+    cursor.execute('SELECT * FROM students WHERE school_id = "{}" AND grade_id = "{}"'.format(dict_of_data.get('school_id'),
+                                                                                              dict_of_data.get('grade_id')))
+    temp, result = 1, ''
+    for i in cursor.fetchall():
+        if i[3].find(today) == 0:
+            result += str(temp) + '. ' + i[2] + ';\n'
+            temp += 1
+    if result:
+        result = 'А сегодня,  день рождения отмечают:\n' + result
+    return result
+
+
 def get_timetable_on_tomorrow():
     # получение расписание на след. день, или же завтра
     need_day = datetime.datetime.today()
@@ -153,6 +165,8 @@ def get_timetable_on_tomorrow():
         answer = answer[answer.find(dict_of_days.get(need_day)):]
         answer = answer[:answer.find('\n\n')]
         answer = get_homework(answer)    # дополняем расписание дзшкой
+        answer += '\n\n'
+        answer += get_birthday()
         return answer
 
 
@@ -189,7 +203,7 @@ def get_afisha():  # получение афишы всей школы
 
 
 def get_marks(id):
-    if len(id) > 9:
+    if len(id) > 12:
         return None
     school_id, grade_id, stud_id = id[:3], id[3:6], id[6:]
     # получаем код ученика, школу, класс, его уч id
@@ -352,15 +366,16 @@ def delete_stud(stud_id):
 
 
 def change_id(stud_id):
-    if len(stud_id) != 3:
+    if len(stud_id) != 6:
         return False
     school_id = dict_of_data.get('school_id')
     grade_id = dict_of_data.get('grade_id')
-    old_stud_id = dict_of_data.get('last_stud_id')[:3]  # режим от edit, так как пометка на инлайн
+    old_stud_id = dict_of_data.get('last_stud_id')[:6]  # режим от edit, так как пометка на инлайн
     cursor.execute('SELECT * FROM students WHERE stud_id = "{}" AND school_id = "{}" '
                    'AND grade_id = "{}"'.format(stud_id, school_id, grade_id))
     if cursor.fetchall():   # если id занят или ещё что-то не так
         return False
+    print(stud_id, old_stud_id)
     cursor.execute('UPDATE students SET stud_id = "{}" WHERE stud_id = "{}" AND '
                    'school_id = "{}" AND grade_id = "{}"'.format(stud_id, old_stud_id, school_id, grade_id))
     cursor.execute('UPDATE marks SET stud_id = "{}" WHERE stud_id = "{}" AND '
@@ -688,7 +703,7 @@ def create_stud(name):
 
 
 def set_stud_id(id):
-    if len(id) > 3:
+    if len(id) != 6:
         return False
     school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
     cursor.execute(
