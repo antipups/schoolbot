@@ -2,14 +2,15 @@ import mysql.connector
 import datetime
 from tabulate import tabulate
 
-TOKEN = '914271777:AAGrCkpUMSUKOeg0VOh06eyz-XF-gXxQa34'
+TOKEN = '914271777:AAE0XrTZtXxQ8lnipXWKjPWtLb7Bn40kDMU'
 
 conn = mysql.connector.connect(user='root', password='0000001', host='127.0.0.1', database='tgbot')
 cursor = conn.cursor(buffered=True)
 
 dict_of_data = {'login': '0', 'password': '0', 'grade': '0',
                 'school_id': '0', 'grade_id': '0', 'name': '0',
-                'stud_id': [], 'last_stud_id': '0', 'ad': '0'}   # словарь с аудентификаторными данными
+                'stud_id': [], 'last_stud_id': '0', 'ad': '0',
+                'subject': '0'}   # словарь с аудентификаторными данными
 cancel_word = 'отмена'
 back_word = 'Назад в админ. меню'
 dict_of_admins = {704369002: "1",
@@ -303,11 +304,17 @@ def set_mark(mark):
                    'WHERE school_id = "{}" AND number_grade = "{}"'.format(login[:3], grade))
     stud_id = dict_of_data.get('last_stud_id')
     grade_id = cursor.fetchall()[0][0]
-    cursor.execute('SELECT name_of_subject FROM teachers '     # получаем предмет учителя
-                   'WHERE school_id = "{}" AND teacher_id = "{}"'.format(login[:3], login[3:]))
-    cursor.execute('INSERT INTO marks (school_id, grade_id, stud_id , name_of_subject , mark) '
-                   'VALUES ("{}", "{}", "{}", "{}", "{}")'.format(login[:3], grade_id, stud_id, cursor.fetchall()[0][0], mark))
-    # из полученных данных в инфо, выбираем предмет, айди студа и ставим в него оценку
+    if dict_of_data.get('subject') == '0':
+        cursor.execute('SELECT name_of_subject FROM teachers '     # получаем предмет учителя
+                       'WHERE school_id = "{}" AND teacher_id = "{}"'.format(login[:3], login[3:]))
+        cursor.execute('INSERT INTO marks (school_id, grade_id, stud_id , name_of_subject , mark) '
+                       'VALUES ("{}", "{}", "{}", "{}", "{}")'.format(login[:3], grade_id, stud_id, cursor.fetchall()[0][0], mark))
+        # из полученных данных в инфо, выбираем предмет, айди студа и ставим в него оценку
+        conn.commit()
+    else:
+        cursor.execute('INSERT INTO marks (school_id, grade_id, stud_id , name_of_subject , mark) '
+                       'VALUES ("{}", "{}", "{}", "{}", "{}")'.format(login[:3], grade_id, stud_id,
+                                                                      dict_of_data.get('subject'), mark))
     conn.commit()
     return True
 
@@ -466,6 +473,41 @@ def grades():
     login = dict_of_data.get('login')
     cursor.execute('SELECT number_grade FROM grades WHERE school_id = "{}"'.format(login[:3]))
     return cursor.fetchall()
+
+
+def change_homework_for_class(homework):
+    login, grade = dict_of_data.get('login'), dict_of_data.get('grade')
+    cursor.execute('SELECT score FROM teachers WHERE school_id = "{}" AND '
+                   'teacher_id = "{}"'.format(login[:3],
+                                              login[3:]))  # + прибавление балов за вход в меню выставления оценок
+    tmp = cursor.fetchall()[0][0]
+    if tmp is None:
+        tmp = 3
+    else:
+        tmp = str(int(tmp) + 3)
+    cursor.execute('UPDATE teachers SET score = "{}" WHERE '
+                   'school_id = "{}" AND teacher_id = "{}"'.format(tmp, login[:3], login[3:]))
+    conn.commit()
+
+    cursor.execute('SELECT grade_id FROM grades WHERE school_id = "{}"'   # получаем класс, который хотел редактировать учитель
+                   ' AND number_grade = "{}"'.format(login[:3], grade))
+    grade_id = cursor.fetchall()
+    if len(grade_id) == 0:
+        return 'Такого класса не существует.\nПопробуйте заного(/room)'
+    else:
+        grade_id = grade_id[0][0]
+
+    cursor.execute('SELECT * FROM homework WHERE school_id = "{}" '
+                   'AND grade_id = "{}" AND subject = "{}"'.format(login[:3], grade_id, dict_of_data.get('subject')))
+
+    if cursor.fetchall():
+        cursor.execute('UPDATE homework SET homework = "{}" WHERE school_id = "{}" '
+                       'AND grade_id = "{}" AND subject = "{}"'.format(homework, login[:3], grade_id, dict_of_data.get('subject')))
+    else:
+        cursor.execute('INSERT INTO homework (school_id, grade_id, subject, homework)'
+                       ' VALUES ("{}", "{}", "{}", "{}")'.format(login[:3], grade_id, dict_of_data.get('subject'), homework))
+    conn.commit()
+    return 'Новое домашнее задание по предмету : {}:\n{}'.format(dict_of_data.get('subject'), homework)
 
 
 def change_homework(homework):  # функция на изменение домашки
@@ -1000,7 +1042,7 @@ def export_teachers():
 
 
 def get_grade_marks():  # получение оценок класса заданного преподователем
-    school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
+    login, school_id, grade_id = dict_of_data.get('login'), dict_of_data.get('school_id'), dict_of_data.get('grade_id')
     cursor.execute('SELECT * FROM marks WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))    # пробиваем оценки
     list_of_marks = cursor.fetchall()
     list_of_students = set()    # делаем множество учеников, для вывода учеников + оценок
@@ -1010,8 +1052,10 @@ def get_grade_marks():  # получение оценок класса зада�
         list_of_students.add(cursor.fetchall()[0])
     cursor.execute('SELECT number_grade FROM grades WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))
     result = 'Класс - ' + cursor.fetchall()[0][0]
-    cursor.execute('SELECT name_of_subject FROM teachers WHERE school_id = "{}" AND teacher_id = "{}"'.format(school_id, dict_of_data.get('login')[3:]))    # получаем предмет учителя
-    subject = cursor.fetchall()[0][0]
+    subject = dict_of_data.get('subject')
+    if dict_of_data.get('subject') == '0' and login.find('к') == -1:
+        cursor.execute('SELECT name_of_subject FROM teachers WHERE school_id = "{}" AND teacher_id = "{}"'.format(school_id, dict_of_data.get('login')[3:]))    # получаем предмет учителя
+        subject = cursor.fetchall()[0][0]
     for i in list_of_students:
         result += '\n' + i[2] + ' : '
         for j in list_of_marks:
@@ -1022,6 +1066,18 @@ def get_grade_marks():  # получение оценок класса зада�
         return 'Оценок ещё нет.'
     else:
         return result
+
+
+def check_classroom_teacher():      # установка дз классного руководителя
+    login = dict_of_data.get('login')
+    if login.find('к') == -1:
+        return False
+    cursor.execute('SELECT name_of_subject FROM teachers WHERE school_id = "{}" AND teacher_id = "{}"'.format(login[:3], login[3:]))
+    whoisit = cursor.fetchall()[0][0]   # получаем предмет кл руководителя, который он хочет выставить
+    if whoisit.find('к') == -1:    # код классного преподователя к10a
+        return False
+    dict_of_data['grade'] = whoisit[1:] # записываем класс классного руководителя
+    return True
 
 
 if __name__ == '__main__':

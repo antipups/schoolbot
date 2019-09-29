@@ -39,7 +39,7 @@ CREATE TABLE `grades` (
 
 LOCK TABLES `grades` WRITE;
 /*!40000 ALTER TABLE `grades` DISABLE KEYS */;
-INSERT INTO `grades` VALUES ('001','10а','001','img\\001001.png','keksij','-1','Доска объявлений, тестовая.\n\n\nУПс ай диднт егейн\n\n\nПривет'),('001','11а','002','img\\учитель.jpg','Биляшка Ольга','https://t.me/joinchat/KfvRalU_1UaALTop7h_cog','Доска объявлений, тестовая. Для другого класса.'),('002','7а','001','img\\учитель.jpg','Тестовый','-1','Доска объявлений, тестовая.'),('111','5б','019','img\\111019.jpg','Любмила Петровна','-1','Новый класс\n\n\n-1'),('001','10б','19б','img\\00119б.jpg','Людмила Никитишна','-1','Новый класс'),('001','4б','04б','img\\00104б.jpg','Люблю бамбук','https://t.me/joinchat/KfvRalU_1UaALTop7h_cog','Доска объявлений пуста.'),('123','123','ббд','img\\123ббд.png','Куркурина Любовь','-1','Новый класс'),('123','12','001','img\\123001.png','keks','-1','Доска объявлений пуста.'),('123','10д','ббк','img\\123ббк.png','фыв','-1','Новый класс\n\n\nфыролвпфыов'),('124','10а','19а','Новый класс','Новый класс','-1','Новый класс'),('124','10г','10г','img\\12410г.png','Кексич','-1','Новый класс'),('asd','-9','asf','img\\asdasf.png','asf','https://t.me/joinchat/KfvRalU_1UaALTop7h_cog','Новый класс\n\n\nКекс');
+INSERT INTO `grades` VALUES ('001','10а','001','img\\001001.png','keksij','-1','Доска объявлений, тестовая.\n\n\nУПс ай диднт егейн\n\n\nПривет'),('001','11а','002','img\\учитель.jpg','Биляшка Ольга','https://t.me/joinchat/KfvRalU_1UaALTop7h_cog','Доска объявлений, тестовая. Для другого класса.'),('002','7а','001','img\\учитель.jpg','Тестовый','-1','Доска объявлений, тестовая.'),('111','5б','019','img\\111019.jpg','Любмила Петровна','-1','Новый класс\n\n\n-1'),('001','10б','19б','img\\00119б.jpg','Людмила Никитишна','-1','Новый класс'),('001','4б','04б','img\\00104б.jpg','Люблю бамбук','https://t.me/joinchat/KfvRalU_1UaALTop7h_cog','Доска объявлений пуста.'),('123','123','ббд','img\\123ббд.png','Куркурина Любовь','-1','Новый класс'),('123','12','001','img\\123001.png','keks','-1','Доска объявлений пуста.'),('123','10д','ббк','img\\123ббк.png','фыв','-1','Новый класс\n\n\nфыролвпфыов'),('124','10а','19а','Новый класс','Новый класс','-1','Новый класс'),('124','10г','10г','img\\12410г.png','Кексич','-1','Новый класс'),('asd','-9','asf','img\\asdasf.png','asf','https://t.me/joinchat/KfvRalU_1UaALTop7h_cog','Новый класс\n\n\nКекс'),('123','5б','090','Новый класс','Новый класс','-1','Новый класс');
 /*!40000 ALTER TABLE `grades` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -64,7 +64,7 @@ CREATE TABLE `homework` (
 
 LOCK TABLES `homework` WRITE;
 /*!40000 ALTER TABLE `homework` DISABLE KEYS */;
-INSERT INTO `homework` VALUES ('001','001','русский','asd'),('002','001','математика','hello'),('001','002','русский','asd'),('001','001','Физика','asd'),('001','001','математика','номер 343'),('001','003','русский','Новое дз'),('002','001','физика','фыв'),('001','001','Английский язык','hello'),('001','001','литература','keks'),('001','04б','Английский язык','asd'),('001','19б','Английский язык','Приветики'),('123','ббк','кекилогия','так блет');
+INSERT INTO `homework` VALUES ('001','001','русский','asd'),('002','001','математика','hello'),('001','002','русский','asd'),('001','001','Физика','asd'),('001','001','математика','номер 343'),('001','003','русский','Новое дз'),('002','001','физика','фыв'),('001','001','Английский язык','hello'),('001','001','литература','keks'),('001','04б','Английский язык','asd'),('001','19б','Английский язык','Приветики'),('123','ббк','кекилогия','так блет'),('001','001','russian','keks');
 /*!40000 ALTER TABLE `homework` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -78,8 +78,8 @@ DROP TABLE IF EXISTS `marks`;
 CREATE TABLE `marks` (
   `school_id` varchar(4) DEFAULT NULL,
   `grade_id` varchar(4) DEFAULT NULL,
-  `stud_id` varchar(4) DEFAULT NULL,
-  `name_of_subject` varchar(16) DEFAULT NULL,
+  `stud_id` varchar(7) DEFAULT NULL,
+  `name_of_subject` varchar(32) DEFAULT NULL,
   `mark` varchar(4) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -90,7 +90,7 @@ CREATE TABLE `marks` (
 
 LOCK TABLES `marks` WRITE;
 /*!40000 ALTER TABLE `marks` DISABLE KEYS */;
-INSERT INTO `marks` VALUES ('001','001','001','русский','4'),('001','001','001','русский','4'),('001','001','001','математика','5'),('001','001','001','математика','2'),('001','001','001','русский','2'),('001','001','002','русский','3'),('001','001','002','русский','2'),('001','001','002','русский','6'),('001','003','123','русский','3'),('001','003','1','русский','5'),('001','003','123','русский','5'),('001','001','001','русский','5'),('001','001','001','русский','5'),('001','001','002','русский','5'),('002','001','002','физика','5'),('002','001','002','физика','3'),('001','001','001','Английский язык','9'),('001','001','001','Английский язык','12'),('001','001','002','литература','3'),('001','001','123','Английский язык','5'),('001','001','001','Английский язык','2'),('123','ббк','кек','кекилогия','5'),('001','001','123','Русский','5'),('001','001','001','Русский','5'),('001','001','003','Физика','5');
+INSERT INTO `marks` VALUES ('001','001','2709кн','русский','5');
 /*!40000 ALTER TABLE `marks` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -113,7 +113,7 @@ CREATE TABLE `res` (
 
 LOCK TABLES `res` WRITE;
 /*!40000 ALTER TABLE `res` DISABLE KEYS */;
-INSERT INTO `res` VALUES ('картинка1','img\\картинка1.jpg'),('реклама1','кексик'),('картинка2','img\\картинка2.jpg'),('реклама2','кексик 2');
+INSERT INTO `res` VALUES ('картинка1','img\\картинка1.jpg'),('реклама1','кексик'),('картинка2','img\\картинка2.jpg'),('реклама2','кексик 2'),('картинка3','img\\картинка3.jpg'),('реклама3','кексик 3'),('картинка4','img\\картинка4.jpg'),('картинка5','картинка5.jpg'),('реклама5','кексик 5'),('реклама4','кексик 4');
 /*!40000 ALTER TABLE `res` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -153,7 +153,7 @@ CREATE TABLE `students` (
   `school_id` varchar(4) DEFAULT NULL,
   `grade_id` varchar(4) DEFAULT NULL,
   `name` varchar(32) DEFAULT NULL,
-  `stud_id` varchar(4) DEFAULT NULL
+  `stud_id` varchar(7) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -163,7 +163,7 @@ CREATE TABLE `students` (
 
 LOCK TABLES `students` WRITE;
 /*!40000 ALTER TABLE `students` DISABLE KEYS */;
-INSERT INTO `students` VALUES ('001','001','Никита Куркурин','001'),('001','001','Сергей Иорданов','002'),('002','001','Коля','002'),('001','003','Николай','123'),('001','003','Николай Смирнов','1'),('001','001','Никитка','123'),('001','001','Никитка','123'),('123','ббк','кексик','123'),('123','ббк','никитка','кек'),('001','001','Максимка','003');
+INSERT INTO `students` VALUES ('001','001','Никита Куркурин','2709кн'),('001','001','Сергей Иорданов','2303си'),('002','001','Петя','2201пк'),('002','001','Коля','2301кл'),('001','002','Петя','2401пл'),('002','002','Коля','2501лк');
 /*!40000 ALTER TABLE `students` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -177,8 +177,8 @@ DROP TABLE IF EXISTS `teachers`;
 CREATE TABLE `teachers` (
   `school_id` varchar(4) DEFAULT NULL,
   `teacher_id` varchar(5) DEFAULT NULL,
-  `password` varchar(28) DEFAULT NULL,
-  `name_of_subject` varchar(20) DEFAULT NULL,
+  `password` varchar(33) DEFAULT NULL,
+  `name_of_subject` varchar(32) DEFAULT NULL,
   `score` varchar(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -189,8 +189,32 @@ CREATE TABLE `teachers` (
 
 LOCK TABLES `teachers` WRITE;
 /*!40000 ALTER TABLE `teachers` DISABLE KEYS */;
-INSERT INTO `teachers` VALUES ('001','0001','1','Физика','182'),('002','0002','test_password','русский','1'),('001','0002','123','математика','3'),('123','1233','1','фылврофы',NULL),('101','0001','123','рузгий',NULL),('123','1234','123','Доча',NULL),('001','123','1','литература','5'),('123','0001','1','кекилогия','4'),('kek','keek','1','kek','5'),('asd','asdd','123','asdf','8');
+INSERT INTO `teachers` VALUES ('001','0001','123','русский','20'),('001','0002','123','русский','0'),('002','0001','123','математика','0'),('002','0002','123','физика','0'),('001','0004','1','что ещё то Четвертый предмет','106'),('001','0003','1','Лулка','106'),('001','0022','1','СТарый новый препод','102'),('001','0024','1','Алгебра','9'),('001','0025','1','Лит-ра','06'),('001','0023','1123','Третий предмет','101'),('001','1234',NULL,NULL,NULL),('001','1235','123','russian','3'),('001','1111','1','рус',NULL),('001','1232','1','kek',NULL),('001','1222','1','1',NULL);
 /*!40000 ALTER TABLE `teachers` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `test`
+--
+
+DROP TABLE IF EXISTS `test`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `test` (
+  `text1` tinytext,
+  `text2` tinytext,
+  `text3` tinytext
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `test`
+--
+
+LOCK TABLES `test` WRITE;
+/*!40000 ALTER TABLE `test` DISABLE KEYS */;
+INSERT INTO `test` VALUES ('1','kek','sex'),('2','lol','lolx2'),('3','kek3','sex');
+/*!40000 ALTER TABLE `test` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -218,7 +242,7 @@ CREATE TABLE `timetable` (
 
 LOCK TABLES `timetable` WRITE;
 /*!40000 ALTER TABLE `timetable` DISABLE KEYS */;
-INSERT INTO `timetable` VALUES ('001','001','test1\ntest2\n','Привет\nУрок\nКекс\n','Математика\nУкраинский язык\nМатематика\n','ИЗО\nФиз-ра\nМатематика\n','Труды\nУкраинский язык\nМатематика\n','keksik\n'),('001','002','Русский язык\nАнглийский язык\nМатематика\n','Английский язык\nРусский язык\nМатематика\n','Математика\nУкраинский язык\nМатематика\n','ИЗО\nФиз-ра\nМатематика\n','Труды\nУкраинский язык\nМатематика\n','Русский язык\nАнглийский язык\nМатематика\n'),('002','001','Русский язык\nАнглийский язык\nМатематика\n','Английский язык\nРусский язык\nМатематика\n','Математика\nУкраинский язык\nМатематика\n','ИЗО\nФиз-ра\nМатематика\n','Труды\nУкраинский язык\nМатематика\n','Русский язык\nАнглийский язык\nМатематика\n'),('1','2',NULL,NULL,NULL,NULL,NULL,NULL),('001','003','кекс1\nкекс2\n','кекс1\nкекс2\n','кекс1\nкекс2\n','кекс1\nкекс2\n','кекс1\nкекс2\n','кекс1\nкекс2\n'),('101','001',NULL,NULL,NULL,NULL,NULL,NULL),('101','002',NULL,NULL,NULL,NULL,NULL,NULL),('007','001',NULL,NULL,NULL,NULL,NULL,NULL),('111','019',NULL,NULL,NULL,NULL,NULL,NULL),('001','19б',NULL,NULL,NULL,NULL,NULL,NULL),('001','04б',NULL,NULL,NULL,NULL,NULL,NULL),('123','ббд',NULL,NULL,NULL,NULL,NULL,NULL),('123','001',NULL,NULL,NULL,NULL,NULL,NULL),('123','ббк',NULL,NULL,NULL,NULL,NULL,NULL),('124','19а',NULL,NULL,NULL,NULL,NULL,NULL),('124','10г',NULL,NULL,NULL,NULL,NULL,NULL),('asd','asf',NULL,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `timetable` VALUES ('001','001','Русский\nУкраинский\nАнглийский\n','ИЗО\nМатан\nФиз-ра\n','кек1\nкек2\nкек3\n','кек1\nкек2\nкек3\n','кек1\nкек2\nкек3\n','Русский\nМатематика\nИЗО\n\n'),('001','002','Русский\nУкраинский\nАнглийский\n','\r\n002\n','002\n','Русский\nУкраинский\nАнглийский\n','ИЗО\nМатан\nФиз-ра\n','кек1\nкек2\nкек3, кек1\nкек2\nкек3, кек1\nкек2\nкек3, кек1\nкек2\nкек3\n'),('002','001','Русский язык\nАнглийский язык\nМатематика\n','Английский язык\nРусский язык\nМатематика\n','Математика\nУкраинский язык\nМатематика\n','ИЗО\nФиз-ра\nМатематика\n','Труды\nУкраинский язык\nМатематика\n','Русский язык\nАнглийский язык\nМатематика\n'),('1','2',NULL,NULL,NULL,NULL,NULL,NULL),('001','003','кекс1\nкекс2\n','кекс1\nкекс2\n','кекс1\nкекс2\n','кекс1\nкекс2\n','кекс1\nкекс2\n','кекс1\nкекс2\n'),('101','001',NULL,NULL,NULL,NULL,NULL,NULL),('101','002',NULL,NULL,NULL,NULL,NULL,NULL),('007','001',NULL,NULL,NULL,NULL,NULL,NULL),('111','019',NULL,NULL,NULL,NULL,NULL,NULL),('001','19б',NULL,NULL,NULL,NULL,NULL,NULL),('001','04б',NULL,NULL,NULL,NULL,NULL,NULL),('123','ббд',NULL,NULL,NULL,NULL,NULL,NULL),('123','001',NULL,NULL,NULL,NULL,NULL,NULL),('123','ббк',NULL,NULL,NULL,NULL,NULL,NULL),('124','19а',NULL,NULL,NULL,NULL,NULL,NULL),('124','10г',NULL,NULL,NULL,NULL,NULL,NULL),('asd','asf',NULL,NULL,NULL,NULL,NULL,NULL),('123','090',NULL,NULL,NULL,NULL,NULL,NULL),('002','002','Русский\nУкраинский\nАнглийский\n','ИЗО\nМатан\nФиз-ра\n','кек1\nкек2\nкек3\n','кек1\nкек2\nкек3\n','кек1\nкек2\nкек3\n','кек1\nкек2\nкек3\n');
 /*!40000 ALTER TABLE `timetable` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -231,4 +255,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-09-18 18:26:32
+-- Dump completed on 2019-09-27 20:01:56

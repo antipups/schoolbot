@@ -91,6 +91,13 @@ def callback(obj):
     elif obj.data == 'ro':  # выбор дз для изменения
         teacher_edit(obj)
 
+    elif obj.data == 'dz_class':  # выбор дз для изменения
+        msg = bot.send_message(chat_id, 'Введите домашнее задание:')
+        bot.register_next_step_handler(msg, change_homework_class)
+
+    elif obj.data == 'ro_class':  # выбор дз для изменения
+        teacher_edit_class(obj)
+
     elif obj.data == 'сш':  # смена кода школы препода
         msg = bot.send_message(chat_id, 'Введите новый код школы (3 символа):')
         bot.register_next_step_handler(msg, change_school_teacher)
@@ -219,6 +226,12 @@ def teacher_room(message):
                                                      ' или нажмите кнопку *Отмена*:', reply_markup=cancel_key())
         bot.register_next_step_handler(msg, teacher_room)
         return
+
+    classroom_teacher = data.check_classroom_teacher()
+    if classroom_teacher:
+        msg = bot.send_message(chat_id, 'Введите предмет который хотите выставить: ')
+        bot.register_next_step_handler(msg, for_class_room)
+        return
     ls_of_grades = data.grades()   # получаем из id учителя все классы(т.к. есть school_id)
     msg = bot.send_message(message.from_user.id, 'Введите класс:',
                            reply_markup=grades(ls_of_grades))
@@ -230,6 +243,69 @@ def action():   # кнопки после ввода класса
     markup.add(types.InlineKeyboardButton(text='Домашнее задание', callback_data='dz'))
     markup.add(types.InlineKeyboardButton(text='Расставление оценок', callback_data='ro'))
     return markup
+
+
+def action_for_class():   # кнопки для классного руководителя
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton(text='Домашнее задание', callback_data='dz_class'))
+    markup.add(types.InlineKeyboardButton(text='Расставление оценок', callback_data='ro_class'))
+    return markup
+
+
+def for_class_room(message):
+    chat_id = message.from_user.id
+    if message.text.lower() == data.cancel_word:
+        bot.send_message(chat_id, 'Операция отменена.')
+        return
+    if len(message.text) > 32:
+        msg = bot.send_message(chat_id, 'Размер введенного предмета слишком велик, введите новый :')
+        bot.register_next_step_handler(msg, for_class_room)
+        return
+    data.dict_of_data['subject'] = message.text
+    bot.send_message(chat_id, 'Выберите действие: ',
+                     reply_markup=action_for_class())
+
+
+def change_homework_class(message):     # меняем дз будучи классным руководителем
+    chat_id = message.from_user.id
+    if message.text.lower() == data.cancel_word:
+        bot.send_message(chat_id, 'Операция отменена.')
+        return
+    new_task = data.change_homework_for_class(message.text)
+    bot.send_message(chat_id, new_task)
+
+
+def teacher_edit_class(message):
+    chat_id = message.from_user.id
+    try:    # если пользователь ошибся и перехотел вводить заного
+        message.data.lower()
+    except AttributeError:
+        if message.text.lower() == data.cancel_word:
+            bot.send_message(chat_id, 'Операция отменена.')
+            return
+        msg = bot.send_message(chat_id, 'В веденном классе нет учеников, попробуйте выбрать другой класс,'
+                                        'или нажмите *Отмена* для выхода:')
+        bot.register_next_step_handler(msg, teacher_edit)
+        return
+
+    if message.data.lower() == data.cancel_word:
+        bot.send_message(chat_id, 'Операция отменена.')
+        return
+
+    magazine = data.magazine()
+
+    if len(magazine) == 0:
+        msg = bot.send_message(chat_id, 'В веденном классе нет учеников, попробуйте выбрать другой класс,'
+                                        'или нажмите *Отмена* для выхода:')
+        bot.register_next_step_handler(msg, teacher_edit)
+        return
+
+    bot.send_message(chat_id, data.get_grade_marks())
+    # получаем всех учеников и выводим их списком
+    markup = types.InlineKeyboardMarkup()
+    for i in magazine:
+        markup.add(types.InlineKeyboardButton(text=i[i.find(':') + 1:], callback_data=i[:i.find(':')]))
+    bot.send_message(chat_id, 'Список учеников :', reply_markup=markup)
 
 
 def change_hw_or_marks(message):
@@ -294,7 +370,7 @@ def accept(message):    # установка оценки,
         bot.send_message(chat_id, 'Операция отменена.')
         return
     if data.set_mark(message.text):
-        bot.send_message(chat_id, 'Оценка успешно установлена, установленная оценка - {}.'.format(message.text))
+        bot.send_message(chat_id, '{}.'.format(message.text))
     else:
         msg = bot.send_message(chat_id, 'Оценка не установлена, ввидите число:')
         bot.register_next_step_handler(msg, accept)
