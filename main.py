@@ -171,9 +171,8 @@ def person_room(message):   # комната школьника
     marks = data.get_marks(data.dict_of_data.get('school_id') + data.dict_of_data.get('grade_id') + message.text)
     # если код неверен выходим, если верен выводим оценки
     if marks is None:
-        msg = bot.send_message(message.from_user.id, 'Неверный код, или у ученика нет оценок, '
-                                                     'попробуйте ещё раз или нажмите кнопку "Отмена" для выхода:')
-        bot.register_next_step_handler(msg, person_room)
+        bot.send_message(message.from_user.id, 'Неверный код, или у ученика нет оценок,'
+                                               ' попробуйте ещё раз.')
         return
     bot.send_message(chat_id, marks)   # выводим оценки
     with open(data.get_res('картинка' + str(random.randint(1, 5))), 'rb') as f:
