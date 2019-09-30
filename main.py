@@ -17,9 +17,9 @@ def command_start(message):
     with open(data.get_res('картинка' + str(random.randint(1, 5))), 'rb') as f:
         bot.send_photo(chat_id, f.read())  # получение второго банера рекламы
     bot.send_message(chat_id, data.get_res('реклама' + str(random.randint(1, 5))))  # получение текста рекламы
-    bot.send_message(chat_id, data.get_list_of_schools())
+    bot.send_message(chat_id, '🏫 Предприятия учавствующие в проекте 🏫\n' + data.get_list_of_schools())
     # получение всех школ участвующих в проекте
-    msg = bot.send_message(chat_id, 'Введите индивидуальный код класса (до 6-ти символов):', reply_markup=cancel_key())
+    msg = bot.send_message(chat_id, 'Введите индивидуальный код класса (6 символов):', reply_markup=cancel_key())
     bot.register_next_step_handler(msg, second_step)
 
 
@@ -57,7 +57,7 @@ def second_step(message):
     grade = data.get_grade(message.text)  # получаем всю информацию о классе для формы
     if grade is None:   # если школа не найдена
         msg = bot.send_message(chat_id, 'Неверный код, попробуйте'
-                                        ' ещё раз(или нажмите кнопку *Отмена*):', reply_markup=cancel_key())
+                                        ' ещё раз (или нажмите кнопку *Отмена*):', reply_markup=cancel_key())
         bot.register_next_step_handler(msg, second_step)
         return
     time.sleep(3)
@@ -67,7 +67,7 @@ def second_step(message):
     name_of_day = data.trans(datetime.datetime.now().strftime("%A"), '\n'.join(grade[1]))
     name_of_day, timetable = name_of_day[:name_of_day.find('\n')], name_of_day[name_of_day.find('\n'):]
     bot.send_message(chat_id,
-                     'Классный руководитель:\n' + grade[0][4] +
+                     '👩‍🏫Классный руководитель👨‍🏫\n' + grade[0][4] +
                      '\n\nРасписание на {} {}:'.format(name_of_day, datetime.datetime.now().strftime("%d.%m.%Y")) + timetable,
                      reply_markup=board())
 
@@ -178,8 +178,7 @@ def person_room(message):   # комната школьника
     marks = data.get_marks(data.dict_of_data.get('school_id') + data.dict_of_data.get('grade_id') + message.text)
     # если код неверен выходим, если верен выводим оценки
     if marks is None:
-        bot.send_message(message.from_user.id, 'Неверный код, или у ученика нет оценок,'
-                                               ' попробуйте ещё раз.')
+        bot.send_message(message.from_user.id, 'Неверный код, или у ученика нет оценок.')
         return
     bot.send_message(chat_id, marks)   # выводим оценки
     with open(data.get_res('картинка' + str(random.randint(1, 5))), 'rb') as f:
@@ -697,7 +696,7 @@ def create_grade(message):
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.check_school(message.text):  # проверка, существует ли введенная школа
-        msg = bot.send_message(chat_id, 'Введите ID класса(до 3-ёх символов, '
+        msg = bot.send_message(chat_id, 'Введите ID класса (3 символа, '
                                         'желательный шифр - год поступления + буква,'
                                         'пример 19б или же без буквы, 190):')
         bot.register_next_step_handler(msg, new_grade)
@@ -1161,17 +1160,20 @@ def text(message):
         bot.send_message(chat_id, data.get_desk())
 
     elif text == '💬Чат':
-        bot.send_message(chat_id, 'Ссылка-приглошение:\n' + data.get_invite_url())
+        bot.send_message(chat_id, 'Ссылка-приглашение:\n' + data.get_invite_url())
         return
 
     elif text == '📰Афиша, новости':
-        bot.send_message(chat_id, data.get_afisha())
+        afisha = data.get_afisha()
+        if afisha == '-1':
+            afisha = 'Новостей пока нет.'
+        bot.send_message(chat_id, afisha)
 
     elif text == '📖Домашнее задание':
         bot.send_message(chat_id, data.print_hw())
 
     elif text == '🚪Личный кабинет':
-        msg = bot.send_message(chat_id, 'Введите персональный код ученика (до 3-ёх символов):')
+        msg = bot.send_message(chat_id, 'Введите персональный код ученика (6 символов):')
         bot.register_next_step_handler(msg, person_room)
 
     if chat_id not in data.dict_of_admins.keys():   # далее проход только админам

@@ -48,8 +48,8 @@ def get_list_of_schools():  # получение всех школ участв�
     if not schools:
         return 'На данный момент школ участвующих в проекте нет.'
     result_str = ''
-    for i in schools:
-        result_str += i[0] + '\n'
+    for i in enumerate(schools):
+        result_str += str(i[0] + 1) + ') ' + i[1][0] + '\n'
     return result_str
 
 
