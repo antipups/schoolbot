@@ -229,7 +229,7 @@ def teacher_room(message):
 
     classroom_teacher = data.check_classroom_teacher()
     if classroom_teacher:
-        msg = bot.send_message(chat_id, 'Введите предмет который хотите выставить: ')
+        msg = bot.send_message(chat_id, 'Введите предмет который хотите изменить: ')
         bot.register_next_step_handler(msg, for_class_room)
         return
     ls_of_grades = data.grades()   # получаем из id учителя все классы(т.к. есть school_id)
@@ -850,7 +850,7 @@ def pre_create_teach(message):
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.get_school(message.text):
-        msg = bot.send_message(chat_id, 'Введите преподовательский ID:')
+        msg = bot.send_message(chat_id, 'Введите преподовательский ID (до 4-ёх цифр):')
         bot.register_next_step_handler(msg, create_teach)
     else:
         msg = bot.send_message(chat_id, 'Школы с введенным ID не существует, попробуйте ввести ещё раз:')

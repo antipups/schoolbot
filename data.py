@@ -281,7 +281,10 @@ def magazine():
     conn.commit()
     cursor.execute('SELECT grade_id FROM grades WHERE '
                    'school_id = "{}" AND number_grade = "{}"'.format(login[:3], grade))
-    grade_id = dict_of_data['grade_id'] = cursor.fetchall()[0][0]
+    grade_id = cursor.fetchall()
+    if not grade_id:
+        return []
+    grade_id = dict_of_data['grade_id'] = grade_id[0][0]
     cursor.execute('SELECT name, stud_id FROM students '
                    'WHERE grade_id = "{}" AND school_id = "{}"'.format(grade_id, login[:3]))
     # получение списка всех студентов
@@ -497,6 +500,7 @@ def change_homework_for_class(homework):
     else:
         grade_id = grade_id[0][0]
 
+
     cursor.execute('SELECT * FROM homework WHERE school_id = "{}" '
                    'AND grade_id = "{}" AND subject = "{}"'.format(login[:3], grade_id, dict_of_data.get('subject')))
 
@@ -690,7 +694,9 @@ def set_grade_name_teacher(name_of_teacher):
 
 
 def set_code(code):
-    if len(code) > 45 or code.find('https://t.me/joinchat/') == -1:
+    if len(code) > 45:
+        return False
+    elif code.find('https://t.me/joinchat/') == -1 and code.find('https://t.me/') == -1:
         if code != '-1':
             return False
     school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
