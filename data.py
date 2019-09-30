@@ -114,9 +114,9 @@ def get_homework(timetable):    # добавление к расписанию �
         try:
             homework = cursor.fetchall()[0][0]  # есть ли дз по предмету
         except IndexError:
-            result += subject + ' : Задания нет.'
+            result += subject + ' : _Задания нет._'
         else:
-            result += subject + ' : ' + homework
+            result += subject + ' : _' + homework + '_'
         result += '\n'
         if timetable.find('\n') + 1 == 0:
             break   # если пробежались по всем предметам, выходим
@@ -132,7 +132,7 @@ def get_birthday():
     temp, result = 1, ''
     for i in cursor.fetchall():
         if i[3].find(today) == 0:
-            result += str(temp) + '. ' + i[2] + ';\n'
+            result += i[2] + ';\n'  # для нумерации верни str(temp)
             temp += 1
     if result:
         result = 'А сегодня,  день рождения отмечают:\n' + result
@@ -492,9 +492,11 @@ def change_homework_for_class(homework):
                    'school_id = "{}" AND teacher_id = "{}"'.format(tmp, login[:3], login[3:]))
     conn.commit()
 
+
     cursor.execute('SELECT grade_id FROM grades WHERE school_id = "{}"'   # получаем класс, который хотел редактировать учитель
                    ' AND number_grade = "{}"'.format(login[:3], grade))
     grade_id = cursor.fetchall()
+    print(grade, grade_id, login)
     if len(grade_id) == 0:
         return 'Такого класса не существует.\nПопробуйте заного(/room)'
     else:
@@ -1082,7 +1084,7 @@ def check_classroom_teacher():      # установка дз классного
     whoisit = cursor.fetchall()[0][0]   # получаем предмет кл руководителя, который он хочет выставить
     if whoisit.find('к') == -1:    # код классного преподователя к10a
         return False
-    dict_of_data['grade'] = whoisit[1:] # записываем класс классного руководителя
+    dict_of_data['grade'] = whoisit[1:]  # записываем класс классного руководителя
     return True
 
 

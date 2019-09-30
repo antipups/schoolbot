@@ -30,12 +30,11 @@ def board():
     first_button = types.KeyboardButton(text='📆Расписание на завтра')
     second_button = types.KeyboardButton(text='🗓Расписание по дням')
     markup.add(first_button, second_button)
-    third_button = types.KeyboardButton(text='📋Доска объявлений')
+    # third_button = types.KeyboardButton(text='📋Доска объявлений')
     fourth_button = types.KeyboardButton(text='💬Чат')
-    markup.add(third_button, fourth_button)
-    markup.add(types.KeyboardButton(text='📰Афиша, новости'),
-               types.KeyboardButton(text='📖Домашнее задание'))
-    markup.add(types.KeyboardButton(text='🚪Личный кабинет'))
+    # markup.add(types.KeyboardButton(text='📰Афиша, новости'),
+    #            types.KeyboardButton(text='📖Домашнее задание'))
+    markup.add(fourth_button, types.KeyboardButton(text='🚪Личный кабинет'))
     return markup
 
 
@@ -1151,7 +1150,7 @@ def text(message):
     text = message.text
     if text == '📆Расписание на завтра':
         timetable = data.get_timetable_on_tomorrow()
-        bot.send_message(chat_id, timetable)
+        bot.send_message(chat_id, timetable, parse_mode='Markdown')
 
     elif text == '🗓Расписание по дням':
         bot.send_message(chat_id, data.get_all_timetable())
