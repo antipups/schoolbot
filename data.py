@@ -10,7 +10,7 @@ cursor = conn.cursor(buffered=True)
 dict_of_data = {'login': '0', 'password': '0', 'grade': '0',
                 'school_id': '0', 'grade_id': '0', 'name': '0',
                 'stud_id': [], 'last_stud_id': '0', 'ad': '0',
-                'subject': '0'}   # словарь с аудентификаторными данными
+                'subject': '0', 'student': '0'}   # словарь с аудентификаторными данными
 cancel_word = 'отмена'
 back_word = 'Назад в админ. меню'
 dict_of_admins = {704369002: "1",
@@ -1086,6 +1086,11 @@ def check_classroom_teacher():      # установка дз классного
         return False
     dict_of_data['grade'] = whoisit[1:]  # записываем класс классного руководителя
     return True
+
+
+def clear_marks():
+    cursor.execute('DELETE FROM marks')
+    conn.commit()
 
 
 if __name__ == '__main__':

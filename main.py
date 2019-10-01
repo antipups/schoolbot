@@ -34,7 +34,7 @@ def board():
     fourth_button = types.KeyboardButton(text='💬Чат')
     # markup.add(types.KeyboardButton(text='📰Афиша, новости'),
     #            types.KeyboardButton(text='📖Домашнее задание'))
-    markup.add(fourth_button, types.KeyboardButton(text='🚪Личный кабинет'))
+    markup.add(fourth_button, types.KeyboardButton(text='Оценки'))
     return markup
 
 
@@ -174,7 +174,11 @@ def person_room(message):   # комната школьника
     if message.text.lower().find('отмена') > -1:
         bot.send_message(chat_id, 'Операция отменена.')
         return
-    marks = data.get_marks(data.dict_of_data.get('school_id') + data.dict_of_data.get('grade_id') + message.text)
+    if data.dict_of_data.get('student') == '0':
+        marks = data.get_marks(data.dict_of_data.get('school_id') + data.dict_of_data.get('grade_id') + message.text)
+        data.dict_of_data['student'] = message.text
+    else:
+        marks = data.get_marks(data.dict_of_data.get('school_id') + data.dict_of_data.get('grade_id') + data.dict_of_data.get('student'))
     # если код неверен выходим, если верен выводим оценки
     if marks is None:
         bot.send_message(message.from_user.id, 'Неверный код, или у ученика нет оценок.')
@@ -227,7 +231,7 @@ def teacher_room(message):
 
     classroom_teacher = data.check_classroom_teacher()
     if classroom_teacher:
-        msg = bot.send_message(chat_id, 'Введите предмет который хотите изменить: ')
+        msg = bot.send_message(chat_id, 'N предмета: ')
         bot.register_next_step_handler(msg, for_class_room)
         return
     ls_of_grades = data.grades()   # получаем из id учителя все классы(т.к. есть school_id)
@@ -1035,6 +1039,7 @@ def edit_admin():   # клавиатурка админа
     markup.add(types.KeyboardButton(text='Расписание'))
     markup.add(types.KeyboardButton(text='Учеников'),
                types.KeyboardButton(text='Преподователей'))
+    markup.add(types.KeyboardButton(text='Очистка всех оценок'))
     markup.add(types.KeyboardButton(text='Назад в админ. меню'))
     return markup
 
@@ -1171,7 +1176,10 @@ def text(message):
     elif text == '📖Домашнее задание':
         bot.send_message(chat_id, data.print_hw())
 
-    elif text == '🚪Личный кабинет':
+    elif text == 'Оценки':
+        if data.dict_of_data.get('student') != '0':
+            person_room(message)
+            return
         msg = bot.send_message(chat_id, 'Введите персональный код ученика (6 символов):')
         bot.register_next_step_handler(msg, person_room)
 
@@ -1282,6 +1290,10 @@ def text(message):
 
     elif text == 'учителей':
         export_teachers(message)
+
+    elif text == 'Очистка всех оценок':
+        data.clear_marks()
+        bot.send_message(chat_id, 'Все оценки удалены.')
 
 
 if __name__ == '__main__':
