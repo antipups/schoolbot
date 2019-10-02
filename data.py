@@ -75,12 +75,12 @@ def get_grade(id):    # получение инфы о одном каком-л�
     except:
         return None
     try:
-        answer[0] = 'Понедельник\n' + answer[0]
-        answer[1] = 'Вторник\n' + answer[1]
-        answer[2] = 'Среда\n' + answer[2]
-        answer[3] = 'Четверг\n' + answer[3]
-        answer[4] = 'Пятница\n' + answer[4]
-        answer[5] = 'Суббота\n' + answer[5]
+        answer[0] = 'понедельник\n' + answer[0]
+        answer[1] = 'вторник\n' + answer[1]
+        answer[2] = 'среду\n' + answer[2]
+        answer[3] = 'четверг\n' + answer[3]
+        answer[4] = 'пятницу\n' + answer[4]
+        answer[5] = 'субботу\n' + answer[5]
     except TypeError:
         answer = 'Полного расписания нет.'
     # настраиваем расписание
@@ -93,8 +93,8 @@ def trans(today, timetable):
     # вывод самого расписания на определенный день по дню
     if today == 'Sunday':
         return 'Сегодня выходной :)'
-    dict_of_days = {'Monday': 'Понедельник', 'Tuesday': 'Вторник', 'Wednesday': 'Среда',
-                    'Thursday': 'Четверг', 'Friday': 'Пятница', 'Saturday': 'Суббота'}
+    dict_of_days = {'Monday': 'понедельник', 'Tuesday': 'вторник', 'Wednesday': 'среду',
+                    'Thursday': 'четверг', 'Friday': 'пятницу', 'Saturday': 'субботу'}
     timetable = timetable[timetable.find(dict_of_days.get(today)):]
     timetable = timetable[:timetable.find('\n\n')]
     return timetable
@@ -295,6 +295,7 @@ def magazine():
         ls_of_result.append(i[1] + ':' + name_of_stud)
         dict_of_data['stud_id'].append(i[0])
         # выбираем учеников и их оценки по предмету
+    print(ls_of_result)
     return ls_of_result
 
 
@@ -996,7 +997,6 @@ def import_timetable(new_timetable):
 
         cursor.execute('SELECT * FROM timetable WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))
 
-        print(data_of_timetable)
         if cursor.fetchall():   # если класс уже был в бд
             failure_result += 'Расписание - ' + data_of_timetable + ' -- ИМПОРТИРОВАНО ' \
                                                                     'и ОБНОВЛЕННО;\n'
@@ -1065,11 +1065,10 @@ def get_grade_marks():  # получение оценок класса зада�
         cursor.execute('SELECT name_of_subject FROM teachers WHERE school_id = "{}" AND teacher_id = "{}"'.format(school_id, dict_of_data.get('login')[3:]))    # получаем предмет учителя
         subject = cursor.fetchall()[0][0]
     for i in list_of_students:
-        result += '\n' + i[2] + ' : '
+        result += '\n_' + i[2][:i[2].find(' ') + 2] + '._ : '
         for j in list_of_marks:
             if j[2] == i[3] and j[3] == subject:
                 result += j[4] + ' '
-
     if len(result) == 0:
         return 'Оценок ещё нет.'
     else:
@@ -1091,6 +1090,13 @@ def check_classroom_teacher():      # установка дз классного
 def clear_marks():
     cursor.execute('DELETE FROM marks')
     conn.commit()
+
+
+def get_subject():
+    login = dict_of_data.get('login')
+    cursor.execute('SELECT name_of_subject FROM teachers '  # получаем предмет учителя
+                   'WHERE school_id = "{}" AND teacher_id = "{}"'.format(login[:3], login[3:]))
+    return cursor.fetchall()[0][0]
 
 
 if __name__ == '__main__':

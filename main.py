@@ -65,8 +65,7 @@ def second_step(message):
         bot.send_photo(chat_id, photo)
     name_of_day = data.trans(datetime.datetime.now().strftime("%A"), '\n'.join(grade[1]))
     name_of_day, timetable = name_of_day[:name_of_day.find('\n')], name_of_day[name_of_day.find('\n'):]
-    bot.send_message(chat_id,
-                     '👩‍🏫Классный руководитель👨‍🏫\n' + grade[0][4] +
+    bot.send_message(chat_id, grade[0][4] +
                      '\n\nРасписание на {} {}:'.format(name_of_day, datetime.datetime.now().strftime("%d.%m.%Y")) + timetable,
                      reply_markup=board())
 
@@ -229,7 +228,7 @@ def teacher_room(message):
         bot.register_next_step_handler(msg, teacher_room)
         return
 
-    classroom_teacher = data.check_classroom_teacher()
+    classroom_teacher = data.check_classroom_teacher()      # ПРОВЕРКА НА КЛАССНОГО РУКОВОДИТЕЛЯ
     if classroom_teacher:
         msg = bot.send_message(chat_id, 'N предмета: ')
         bot.register_next_step_handler(msg, for_class_room)
@@ -295,14 +294,14 @@ def teacher_edit_class(message):
         return
 
     magazine = data.magazine()
-
     if len(magazine) == 0:
         msg = bot.send_message(chat_id, 'В веденном классе нет учеников, попробуйте выбрать другой класс,'
                                         'или нажмите *Отмена* для выхода:')
         bot.register_next_step_handler(msg, teacher_edit)
         return
 
-    bot.send_message(chat_id, data.get_grade_marks())
+    ls_of_marks = data.get_grade_marks()
+    bot.send_message(chat_id, ls_of_marks, parse_mode='Markdown')
     # получаем всех учеников и выводим их списком
     markup = types.InlineKeyboardMarkup()
     for i in magazine:
@@ -358,12 +357,14 @@ def teacher_edit(message):
         bot.register_next_step_handler(msg, teacher_edit)
         return
 
-    bot.send_message(chat_id, data.get_grade_marks())
+    ls_of_marks = data.get_grade_marks()
+    bot.send_message(chat_id, ls_of_marks, parse_mode='Markdown')
+    subject = data.get_subject().capitalize() + ' : '
     # получаем всех учеников и выводим их списком
     markup = types.InlineKeyboardMarkup()
     for i in magazine:
         markup.add(types.InlineKeyboardButton(text=i[i.find(':') + 1:], callback_data=i[:i.find(':')]))
-    bot.send_message(chat_id, 'Список учеников :', reply_markup=markup)
+    bot.send_message(chat_id, subject, reply_markup=markup)
 
 
 def accept(message):    # установка оценки,
