@@ -1129,9 +1129,22 @@ def export_menu():
     return markup
 
 
+def pre_export_students(message):
+    chat_id = message.from_user.id
+    bot.send_message(chat_id, 'Доступные школы , их ID:\n' + data.get_list_of_schoold_for_admin())
+    msg = bot.send_message(chat_id, 'Введите ID школы, из которой хотите экспортировать студентов:')
+    bot.register_next_step_handler(msg, export_students)
+
+
 def export_students(message):
     chat_id = message.from_user.id
-
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
+        return
+    if data.get_school(message.text):
+        msg = bot.send_message(chat_id, 'Школа не найдена, попбробуйте ещё раз или нажмите *Назад*:')
+        bot.register_next_step_handler(msg, export_students)
+        return
     data.export_students()  # создаем файл
     with open('temp_file.txt', 'rb') as f:
         bot.send_document(chat_id, f)  # отсылаем его
@@ -1287,7 +1300,7 @@ def text(message):
         bot.send_message(chat_id, 'Выберите кого экспортировать:', reply_markup=export_menu())
 
     elif text == 'учеников':
-        export_students(message)
+        pre_export_students(message)
 
     elif text == 'учителей':
         export_teachers(message)

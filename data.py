@@ -1014,7 +1014,7 @@ def import_timetable(new_timetable):
 
 
 def export_students():
-    cursor.execute('SELECT * FROM students')
+    cursor.execute('SELECT * FROM students WHERE school_id = "{}"'.format(dict_of_data.get('school_id')))
     result = cursor.fetchall()
     if result:
         temp_ls = []  # для помещения туда одного ученика
@@ -1097,6 +1097,16 @@ def get_subject():
     cursor.execute('SELECT name_of_subject FROM teachers '  # получаем предмет учителя
                    'WHERE school_id = "{}" AND teacher_id = "{}"'.format(login[:3], login[3:]))
     return cursor.fetchall()[0][0]
+
+
+def get_school(id):
+    if len(id) > 3:
+        return True
+    cursor.execute('SELECT * FROM schools WHERE school_id = "{}"'.format(id))
+    if cursor.fetchall():
+        dict_of_data['school_id'] = id
+        return False
+    return True
 
 
 if __name__ == '__main__':
