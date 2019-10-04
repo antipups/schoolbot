@@ -295,7 +295,6 @@ def magazine():
         ls_of_result.append(i[1] + ':' + name_of_stud)
         dict_of_data['stud_id'].append(i[0])
         # выбираем учеников и их оценки по предмету
-    print(ls_of_result)
     return ls_of_result
 
 
@@ -386,7 +385,6 @@ def change_id(stud_id):
                    'AND grade_id = "{}"'.format(stud_id, school_id, grade_id))
     if cursor.fetchall():   # если id занят или ещё что-то не так
         return False
-    print(stud_id, old_stud_id)
     cursor.execute('UPDATE students SET stud_id = "{}" WHERE stud_id = "{}" AND '
                    'school_id = "{}" AND grade_id = "{}"'.format(stud_id, old_stud_id, school_id, grade_id))
     cursor.execute('UPDATE marks SET stud_id = "{}" WHERE stud_id = "{}" AND '
@@ -412,7 +410,6 @@ def new_teacher_schoold_id(new_id):
     cursor.execute('SELECT name_of_subject FROM teachers WHERE school_id = "{}"'  # взятие предмета учителя 
                    'AND teacher_id = "{}"'.format(login[:3], login[3:]))
     subject = cursor.fetchall()
-    # print(subject)
     cursor.execute('SELECT * FROM teachers WHERE school_id = "{}"'   # проверка на одинаковый предмет
                    ' AND name_of_subject = "{}"'.format(new_id, subject[0][0]))
     if cursor.fetchall():
@@ -497,7 +494,6 @@ def change_homework_for_class(homework):
     cursor.execute('SELECT grade_id FROM grades WHERE school_id = "{}"'   # получаем класс, который хотел редактировать учитель
                    ' AND number_grade = "{}"'.format(login[:3], grade))
     grade_id = cursor.fetchall()
-    print(grade, grade_id, login)
     if len(grade_id) == 0:
         return 'Такого класса не существует.\nПопробуйте заного(/room)'
     else:
@@ -699,7 +695,7 @@ def set_grade_name_teacher(name_of_teacher):
 def set_code(code):
     if len(code) > 45:
         return False
-    elif code.find('https://t.me/joinchat/') == -1 and code.find('https://t.me/') == -1:
+    elif code.find('t.me/joinchat/') == -1 and code.find('t.me/') == -1:
         if code != '-1':
             return False
     school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
@@ -876,8 +872,6 @@ def import_stud(new_students):
             new_students = new_students[new_students.find('\n') + 1:]
         else:   # если конец файла
             stud_id = new_students
-        # print(school_id, grade_id, name, stud_id) # принт значений из файла
-        # print(len(school_id), len(grade_id), len(name), len(stud_id)) # принт их длины(для проверки)
         if len(school_id) != 3 or len(grade_id) != 3 or len(name) > 31 or len(stud_id) != 3:    # если не по форме ученик
             failure_result += 'Ученик не ипортирован - ' + school_id + ' ' + grade_id + ' ' \
                               + name + ' ' + stud_id + ' -- так как ученик введен не по форме;\n'
@@ -901,7 +895,6 @@ def import_stud(new_students):
 
 
 def import_teach(new_teachers):
-    # print(new_teachers)
     failure_result = ''
     while new_teachers.find(', ') > -1:  # цикл бежит по строкам
         school_id = new_teachers[:new_teachers.find(', ')]
@@ -917,13 +910,9 @@ def import_teach(new_teachers):
             score = new_teachers[:new_teachers.find('\n') - 1]
             new_teachers = new_teachers[new_teachers.find('\n') + 1:]
         else:  # если конец файла
-            # print(new_teachers)
             score = new_teachers
 
         data_of_teacher = school_id + ' ' + teacher_id + ' ' + password + ' ' + subject + ' ' + score   # для уменьшения кол-ва кода
-
-        # print(data_of_teacher)
-        # print(len(school_id), len(teacher_id), len(password), len(subject), len(score))
 
         if len(school_id) != 3 or len(teacher_id) > 4 or len(password) > 32 or len(subject) > 31 or len(score) > 9:  # если не по форме ученик
             failure_result += 'Учитель не ипортирован - ' + data_of_teacher\
@@ -974,7 +963,6 @@ def import_timetable(new_timetable):
             sat = new_timetable[:new_timetable.find('\n') - 1]
             new_timetable = new_timetable[new_timetable.find('\n') + 1:]
         else:  # если конец файла
-            # print(new_teachers)
             sat = new_timetable
 
         data_of_timetable = school_id + " " + grade_id + " " + mon + " " + tue + " " + wed + " " + thu + " " + fri + " " + sat
@@ -1132,10 +1120,10 @@ def get_all_subjects():
 def get_all_subjects_for_teacher():
     cursor.execute('SELECT grade_id FROM grades WHERE number_grade = "{}"'.format(dict_of_data.get('login')[4:]))
     dict_of_data['grade_id'] = cursor.fetchall()[0][0]
-    print(dict_of_data.get('grade_id'))
     cursor.execute('SELECT subject FROM grades_with_subjects WHERE school_id = "{}" AND'
                    ' grade_id = "{}"'.format(dict_of_data.get('school_id'), dict_of_data.get('grade_id')))
     return cursor.fetchall()
+
 
 def edit_subject(subject):    # создаем предмет
     try:
@@ -1178,6 +1166,14 @@ def check_password_of_teachers():
     if result:
         return result[0][2]
     return False
+
+
+def get_info_about_grade(id):
+    cursor.execute('SELECT * FROM grades WHERE school_id = "{}" AND grade_id = "{}"'.format(id[:3], id[3:]))
+    if cursor.fetchall():
+        dict_of_data['school_id'], dict_of_data['grade_id']= id[:3], id[3:]
+        return 'Введите новую ссылку-приглашение:'
+    return 'Введенный класс не найден, попробуйте ещё раз.'
 
 
 

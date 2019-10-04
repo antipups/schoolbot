@@ -218,7 +218,6 @@ def grades(ls_of_grades):   # генератор списка классов
 
 def keyboard_of_subjects_for_teacher():
     result = data.get_all_subjects_for_teacher()
-    print(result)
     if result:  # если предметы есть, заходим в меню и выводим все предметы, иначе не выводим меню, а говорим что тут пусто
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
         for i in result:
@@ -1080,7 +1079,8 @@ def edit_admin():   # клавиатурка админа
     markup.add(types.KeyboardButton(text='Реклама'))
     markup.add(types.KeyboardButton(text='Школа'),
                types.KeyboardButton(text='Класс.'))
-    markup.add(types.KeyboardButton(text='Расписание'))
+    markup.add(types.KeyboardButton(text='Расписание'),
+               types.KeyboardButton(text='Ссылку-приглашение'))
     markup.add(types.KeyboardButton(text='Учеников'),
                types.KeyboardButton(text='Преподователей'))
     markup.add(types.KeyboardButton(text='предмет'),
@@ -1240,6 +1240,31 @@ def edit_subject(message):
         bot.register_next_step_handler(bot.send_message(chat_id, result), pre_edit_subject)
 
 
+def pre_edit_url_of_invite(message):
+    chat_id = message.from_user.id
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Операция отменена.', reply_markup=choose())
+        return
+    result = data.get_info_about_grade(message.text)
+    msg = bot.send_message(chat_id, result)
+    if result.find('ещё') > -1:
+        bot.register_next_step_handler(msg, pre_edit_url_of_invite)
+    else:
+        bot.register_next_step_handler(msg, edit_url_of_invite)
+
+
+def edit_url_of_invite(message):
+    chat_id = message.from_user.id
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Операция отменена.', reply_markup=choose())
+        return
+
+    if data.set_code(message.text):
+        bot.send_message(chat_id, 'Ссылка успешно обновлена')
+    else:
+        bot.register_next_step_handler(bot.send_message(chat_id, 'Ссылка не удовлетворяет стандартам, введите новую ссылку:'), edit_url_of_invite)
+
+
 @bot.message_handler(content_types=['text'])
 def text(message):
     chat_id = message.from_user.id
@@ -1340,6 +1365,10 @@ def text(message):
         bot.send_message(chat_id, 'Прочтите информацию выше и выберите из панели внизу что хотите редактировать:',
                          reply_markup=edit_baner(ls_of_buttons))
         bot.register_next_step_handler(msg, pre_change_banner_or_text)
+
+    elif text == 'Ссылку-приглашение':
+        msg = bot.send_message(chat_id, 'Введите код класса который хотите редактировать:')
+        bot.register_next_step_handler(msg, pre_edit_url_of_invite)
 
     elif text == 'Школа':
         bot.send_message(chat_id, 'Доступные школы , их ID:\n' + data.get_list_of_schoold_for_admin())
