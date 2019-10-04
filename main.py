@@ -216,6 +216,18 @@ def grades(ls_of_grades):   # генератор списка классов
     return markup
 
 
+def keyboard_of_subjects_for_teacher():
+    result = data.get_all_subjects_for_teacher()
+    print(result)
+    if result:  # если предметы есть, заходим в меню и выводим все предметы, иначе не выводим меню, а говорим что тут пусто
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
+        for i in result:
+            markup.add(types.KeyboardButton(text=i[0]))
+        markup.add(types.KeyboardButton(text='Вернутся в меню'))
+        return markup
+    return False
+
+
 def teacher_room(message):
     chat_id = message.from_user.id
     if message.text.lower() == data.cancel_word:
@@ -230,7 +242,11 @@ def teacher_room(message):
 
     classroom_teacher = data.check_classroom_teacher()      # ПРОВЕРКА НА КЛАССНОГО РУКОВОДИТЕЛЯ
     if classroom_teacher:
-        msg = bot.send_message(chat_id, 'N предмета: ')
+        if keyboard_of_subjects_for_teacher() is False:
+            bot.send_message(chat_id, 'Предметов нет.')
+            return
+        msg = bot.send_message(chat_id, 'Выберите устанавливаемый предмет:',
+                               reply_markup=keyboard_of_subjects_for_teacher())
         bot.register_next_step_handler(msg, for_class_room)
         return
     ls_of_grades = data.grades()   # получаем из id учителя все классы(т.к. есть school_id)
@@ -258,13 +274,16 @@ def for_class_room(message):
     if message.text.lower() == data.cancel_word:
         bot.send_message(chat_id, 'Операция отменена.')
         return
-    if len(message.text) > 32:
-        msg = bot.send_message(chat_id, 'Размер введенного предмета слишком велик, введите новый :')
-        bot.register_next_step_handler(msg, for_class_room)
-        return
-    data.dict_of_data['subject'] = message.text
-    bot.send_message(chat_id, 'Выберите действие: ',
-                     reply_markup=action_for_class())
+    for i in data.get_all_subjects():
+        if i[1] == message.text:
+            data.dict_of_data['subject'] = message.text
+            bot.send_message(chat_id, 'Выберите действие: ',
+                             reply_markup=action_for_class())
+            return
+    else:
+        bot.register_next_step_handler(bot.send_message(chat_id,
+                                                        'Предмета не найдено в списке предметов, '
+                                                        'попробуйте ещё раз:'), for_class_room)
 
 
 def change_homework_class(message):     # меняем дз будучи классным руководителем
@@ -797,16 +816,40 @@ def set_code(message):
         bot.register_next_step_handler(msg, set_code)
 
 
+def keyboard_of_subjects_for_admin():   # функция дл клавиатурки на редактирование предметов
+    result = data.get_all_subjects()
+    if result:  # если предметы есть, заходим в меню и выводим все предметы, иначе не выводим меню, а говорим что тут пусто
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
+        for i in result:
+            markup.add(types.KeyboardButton(text=i[1]))
+        markup.add(types.KeyboardButton(text=data.back_word))
+        return markup
+    return False
+
+
 def set_desk(message):
     chat_id = message.from_user.id
     if message.text == data.back_word:
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_desk(message.text):
-        bot.send_message(chat_id, 'Класс успешно создан')
+        msg = bot.send_message(chat_id, 'Доска успешно установленна.\nВыберите предметы которые будут выводится у учителя:',
+                               reply_markup=keyboard_of_subjects_for_admin())
+        bot.register_next_step_handler(msg, set_of_subject_for_class)
     else:
         msg = bot.send_message(chat_id, 'Введенная информация не подходит, введите новую:')
         bot.register_next_step_handler(msg, set_desk)
+
+
+def set_of_subject_for_class(message):
+    chat_id = message.from_user.id
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Класс успешно создан')
+        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
+        return
+    msg = bot.send_message(chat_id, data.insert_in_grade_of_subject(message.text),
+                           reply_markup=keyboard_of_subjects_for_admin())
+    bot.register_next_step_handler(msg, set_of_subject_for_class)
 
 
 def pre_create_stud(message):
@@ -1040,8 +1083,8 @@ def edit_admin():   # клавиатурка админа
     markup.add(types.KeyboardButton(text='Расписание'))
     markup.add(types.KeyboardButton(text='Учеников'),
                types.KeyboardButton(text='Преподователей'))
-    markup.add(types.KeyboardButton(text='Очистка всех оценок'))
-    markup.add(types.KeyboardButton(text='Назад в админ. меню'))
+    markup.add(types.KeyboardButton(text='предмет'),
+               types.KeyboardButton(text='Назад в админ. меню'))
     return markup
 
 
@@ -1051,6 +1094,7 @@ def create_admin():   # клавиатурка админа на создани�
                types.KeyboardButton(text='Класс'))
     markup.add(types.KeyboardButton(text='Ученика'),
                types.KeyboardButton(text='Учителя'))
+    markup.add(types.KeyboardButton(text='Предмет'))
     markup.add(types.KeyboardButton(text='Назад в админ. меню'))
     return markup
 
@@ -1160,11 +1204,47 @@ def export_teachers(message):
     os.remove('temp_file.txt')  # удаляем его
 
 
+def create_subject(message):        # создание предмета
+    chat_id = message.from_user.id
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Операция отменена.', reply_markup=choose())
+        return
+    result = data.create_subject(message.text.capitalize())  # добавляем предмет в базу + увеличиваем первую букву
+    bot.register_next_step_handler(bot.send_message(chat_id, result), create_subject)
+
+
+def pre_edit_subject(message):
+    chat_id = message.from_user.id
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Операция отменена.', reply_markup=choose())
+        return
+    for i in data.get_all_subjects():
+        if i[1] == message.text:
+            data.dict_of_data['old_subject'] = message.text
+            bot.register_next_step_handler(bot.send_message(chat_id, "Введите новое название предмета:"), edit_subject)
+            return
+    else:
+        bot.register_next_step_handler(bot.send_message(chat_id, "Введенный предмет не найден, попробуйте ещё раз:"),
+                                       pre_edit_subject)
+
+
+def edit_subject(message):
+    chat_id = message.from_user.id
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Операция отменена.', reply_markup=choose())
+        return
+    result = data.edit_subject(message.text.capitalize())  # редактируем предмет
+    if result.find('введите') > -1:
+        bot.register_next_step_handler(bot.send_message(chat_id, result), edit_subject)
+    else:
+        bot.register_next_step_handler(bot.send_message(chat_id, result), pre_edit_subject)
+
+
 @bot.message_handler(content_types=['text'])
 def text(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
-        bot.send_message(chat_id, 'Операция отменена.')
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Операция отменена.', reply_markup=choose())
         return
     text = message.text
     if text == '📆Расписание на завтра':
@@ -1196,6 +1276,13 @@ def text(message):
             return
         msg = bot.send_message(chat_id, 'Введите персональный код ученика (6 символов):')
         bot.register_next_step_handler(msg, person_room)
+
+    password = data.check_password_of_teachers()
+    if data.check_password_of_teachers() is not False:
+        if text == 'Вернутся в меню':
+            message.text = password
+            teacher_room(message)
+            return
 
     if chat_id not in data.dict_of_admins.keys():   # далее проход только админам
         return
@@ -1232,7 +1319,7 @@ def text(message):
 
     elif text == 'Редактировать':
         bot.send_message(chat_id, 'Выберите что хотите редактировать, '
-                                  'все возмодные варианты представлены на клавиатуре ниже:',
+                                  'все возможные варианты представлены на клавиатуре ниже:',
                          reply_markup=edit_admin())
 
     # ДАЛЕЕ ПОШЛО РЕДАКТИРОВАНИЕ
@@ -1305,10 +1392,19 @@ def text(message):
     elif text == 'учителей':
         export_teachers(message)
 
-    elif text == 'Очистка всех оценок':
-        data.clear_marks()
-        bot.send_message(chat_id, 'Все оценки удалены.')
+    elif text == 'Предмет':
+        msg = bot.send_message(chat_id, 'Введите предмет который хотите добавить:')
+        bot.register_next_step_handler(msg, create_subject)
+
+    elif text == 'предмет':
+        if keyboard_of_subjects_for_admin() is False:
+            bot.send_message(chat_id, 'Нет предметов для редактирования.')
+            return
+        msg = bot.send_message(chat_id, 'Введите предмет который хотите редактировать:', reply_markup=keyboard_of_subjects_for_admin())
+        bot.register_next_step_handler(msg, pre_edit_subject)
 
 
 if __name__ == '__main__':
+    if datetime.datetime.now().strftime('%a, %H:%M') == 'Mon, 05:00':  # чтоб чистило оценки каждый понедельник в 5 утра ПО ВРЕМЕНИ СЕРВЕРА
+        data.clear_marks()
     bot.infinity_polling(True)

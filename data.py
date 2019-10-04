@@ -10,7 +10,7 @@ cursor = conn.cursor(buffered=True)
 dict_of_data = {'login': '0', 'password': '0', 'grade': '0',
                 'school_id': '0', 'grade_id': '0', 'name': '0',
                 'stud_id': [], 'last_stud_id': '0', 'ad': '0',
-                'subject': '0', 'student': '0'}   # словарь с аудентификаторными данными
+                'subject': '0', 'student': '0', 'old_subject': '0'}   # словарь с аудентификаторными данными
 cancel_word = 'отмена'
 back_word = 'Назад в админ. меню'
 dict_of_admins = {704369002: "1",
@@ -1099,14 +1099,86 @@ def get_subject():
     return cursor.fetchall()[0][0]
 
 
-def get_school(id):
-    if len(id) > 3:
-        return True
-    cursor.execute('SELECT * FROM schools WHERE school_id = "{}"'.format(id))
-    if cursor.fetchall():
-        dict_of_data['school_id'] = id
+def get_school(school_id):
+    if len(school_id) != 3:
         return False
-    return True
+    cursor.execute('SELECT * FROM schools WHERE school_id = "{}"'.format(school_id))
+    if cursor.fetchall():
+        dict_of_data['school_id'] = school_id
+        return True
+    return False
+
+
+def create_subject(subject):    # создаем предмет
+    try:
+        cursor.execute('INSERT INTO subjects (subject) VALUES ("{}")'.format(subject))
+    except mysql.connector.errors.IntegrityError:   # проверяем на дубликаты
+        return 'Данный предмет существует, введите другой:'
+    except mysql.connector.errors.DataError:    # если ввел какую-то длинную дресню
+        return 'Имя введенного предмета велико, введите другой:'
+    except mysql.connector.errors.ProgrammingError:  # если ввел какой-то запретный символ
+        return 'Введен плохой символ, введите буквенные символы:'
+    else:
+        conn.commit()
+        return 'Предмет успешно добавлен, если хотите добавить ' \
+               'ещё какие-то предметы, введите их или нажмите *Назад*'
+
+
+def get_all_subjects():
+    cursor.execute('SELECT * FROM subjects')
+    return cursor.fetchall()
+
+
+def get_all_subjects_for_teacher():
+    cursor.execute('SELECT grade_id FROM grades WHERE number_grade = "{}"'.format(dict_of_data.get('login')[4:]))
+    dict_of_data['grade_id'] = cursor.fetchall()[0][0]
+    print(dict_of_data.get('grade_id'))
+    cursor.execute('SELECT subject FROM grades_with_subjects WHERE school_id = "{}" AND'
+                   ' grade_id = "{}"'.format(dict_of_data.get('school_id'), dict_of_data.get('grade_id')))
+    return cursor.fetchall()
+
+def edit_subject(subject):    # создаем предмет
+    try:
+        cursor.execute('UPDATE subjects SET subject = "{}" WHERE subject = "{}"'.format(subject, dict_of_data.get('old_subject')))
+    except mysql.connector.errors.IntegrityError:  # проверяем на дубликаты
+        return 'Данный предмет существует, введите другой:'
+    except mysql.connector.errors.DataError:  # если ввел какую-то длинную дресню
+        return 'Имя введенного предмета велико, введите другой:'
+    except mysql.connector.errors.ProgrammingError:  # если ввел какой-то запретный символ
+        return 'Введен плохой символ, введите буквенные символы:'
+    else:
+        conn.commit()
+        return 'Предмет успешно редактирован, если хотите редактировать ' \
+               'ещё какие-то предметы, выбирайте их из списка или нажмите *Назад*'
+
+
+def insert_in_grade_of_subject(subject):
+    grade_id, school_id = dict_of_data.get('grade_id'), dict_of_data.get('school_id')
+    try:
+        cursor.execute('INSERT INTO grades_with_subjects (school_id, grade_id, subject)'
+                       ' VALUES ("{}", "{}", "{}")'.format(school_id, grade_id, subject))
+    except mysql.connector.errors.IntegrityError:  # проверяем на дубликаты
+        return 'Данный предмет существует, введите другой:'
+    except mysql.connector.errors.DataError:  # если ввел какую-то длинную дресню
+        return 'Имя введенного предмета велико, введите другой:'
+    except mysql.connector.errors.ProgrammingError:  # если ввел какой-то запретный символ
+        return 'Введен плохой символ, введите буквенные символы:'
+    else:
+        conn.commit()
+        return 'Предмет успешно установлен в класс, если хотите добавить ' \
+               'ещё какие-то предметы, выбирайте их из списка или нажмите *Назад*'
+
+
+def check_password_of_teachers():
+    cursor.execute('SELECT * FROM teachers WHERE school_id = "{}" '
+                   'AND teacher_id = "{}" AND password = "{}"'.format(dict_of_data.get('login')[:3],
+                                                                      dict_of_data.get('login')[3:],
+                                                                      dict_of_data.get('password')))
+    result = cursor.fetchall()
+    if result:
+        return result[0][2]
+    return False
+
 
 
 if __name__ == '__main__':
