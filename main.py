@@ -291,7 +291,7 @@ def change_homework_class(message):     # меняем дз будучи кла�
         bot.send_message(chat_id, 'Операция отменена.')
         return
     new_task = data.change_homework_for_class(message.text)
-    bot.send_message(chat_id, new_task)
+    bot.send_message(chat_id, new_task, reply_markup=return_markup())
 
 
 def teacher_edit_class(message):
@@ -340,6 +340,8 @@ def change_hw_or_marks(message):
         return
     bot.send_message(chat_id, 'Выберите действие: ',
                      reply_markup=action())
+    bot.send_message(chat_id, 'Если хотите вернутся к выбору классов, нажмите кнопку *Вернутся*',
+                     reply_markup=return_markup())
 
 
 def return_markup():

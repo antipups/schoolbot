@@ -502,12 +502,15 @@ def change_homework_for_class(homework):
     cursor.execute('SELECT * FROM homework WHERE school_id = "{}" '
                    'AND grade_id = "{}" AND subject = "{}"'.format(login[:3], grade_id, dict_of_data.get('subject')))
 
-    if cursor.fetchall():
-        cursor.execute('UPDATE homework SET homework = "{}" WHERE school_id = "{}" '
-                       'AND grade_id = "{}" AND subject = "{}"'.format(homework, login[:3], grade_id, dict_of_data.get('subject')))
-    else:
-        cursor.execute('INSERT INTO homework (school_id, grade_id, subject, homework)'
-                       ' VALUES ("{}", "{}", "{}", "{}")'.format(login[:3], grade_id, dict_of_data.get('subject'), homework))
+    try:
+        if cursor.fetchall():
+            cursor.execute('UPDATE homework SET homework = "{}" WHERE school_id = "{}" '
+                           'AND grade_id = "{}" AND subject = "{}"'.format(homework, login[:3], grade_id, dict_of_data.get('subject')))
+        else:
+            cursor.execute('INSERT INTO homework (school_id, grade_id, subject, homework)'
+                           ' VALUES ("{}", "{}", "{}", "{}")'.format(login[:3], grade_id, dict_of_data.get('subject'), homework))
+    except mysql.connector.errors.ProgrammingError:
+        return 'Введенное домашнее задание содержит запрещенные символы.'
     conn.commit()
     return 'Новое домашнее задание по предмету : {}:\n{}'.format(dict_of_data.get('subject'), homework)
 
