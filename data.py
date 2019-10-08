@@ -499,7 +499,6 @@ def change_homework_for_class(homework):
     else:
         grade_id = grade_id[0][0]
 
-
     cursor.execute('SELECT * FROM homework WHERE school_id = "{}" '
                    'AND grade_id = "{}" AND subject = "{}"'.format(login[:3], grade_id, dict_of_data.get('subject')))
 

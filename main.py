@@ -342,6 +342,12 @@ def change_hw_or_marks(message):
                      reply_markup=action())
 
 
+def return_markup():
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    markup.add(types.KeyboardButton(text='Вернутся в меню'))
+    return markup
+
+
 def change_homework(message):
     chat_id = message.from_user.id
     if message.text.lower() == data.cancel_word:
@@ -349,7 +355,8 @@ def change_homework(message):
         return
     # получаем все данные, а именно логин, класс, дз
     new_task = data.change_homework(message.text)
-    bot.send_message(chat_id, 'Задание было успешно обновленно;\nНовое задание: \n' + new_task)
+    bot.send_message(chat_id, 'Задание было успешно обновленно;\nНовое задание: \n' + new_task,
+                     reply_markup=return_markup())
 
 
 def teacher_edit(message):
@@ -391,7 +398,7 @@ def accept(message):    # установка оценки,
         bot.send_message(chat_id, 'Операция отменена.')
         return
     if data.set_mark(message.text):
-        bot.send_message(chat_id, '{}.'.format(message.text))
+        bot.send_message(chat_id, '{}.'.format(message.text), reply_markup=return_markup())
     else:
         msg = bot.send_message(chat_id, 'Оценка не установлена, ввидите число:')
         bot.register_next_step_handler(msg, accept)
