@@ -477,8 +477,15 @@ def delete_teacher():
 
 def grades():
     login = dict_of_data.get('login')
-    cursor.execute('SELECT number_grade FROM grades WHERE school_id = "{}"'.format(login[:3]))
-    return cursor.fetchall()
+    cursor.execute('SELECT name_of_subject FROM teachers WHERE school_id = "{}" AND '
+                   'teacher_id = "{}"'.format(login[:3], login[3:]))
+    subject = cursor.fetchall()[0][0]
+    cursor.execute('SELECT school_id, grade_id FROM grades_with_subjects WHERE school_id = "{}" AND subject = "{}"'.format(login[:3], subject))
+    res = []
+    for i in cursor.fetchall():
+        cursor.execute('SELECT number_grade FROM grades WHERE school_id = "{}" AND grade_id = "{}"'.format(login[:3], i[1]))
+        res.append(cursor.fetchall()[0][0])
+    return res
 
 
 def change_homework_for_class(homework):

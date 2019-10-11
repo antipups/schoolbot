@@ -211,7 +211,7 @@ def pre_teacher_room(message):
 def grades(ls_of_grades):   # генератор списка классов
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
     for i in ls_of_grades:
-        markup.add(types.KeyboardButton(text=i[0]))
+        markup.add(types.KeyboardButton(text=i))
     markup.add(types.KeyboardButton(text='Отмена'))
     return markup
 
