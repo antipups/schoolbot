@@ -4,13 +4,14 @@ from tabulate import tabulate
 
 TOKEN = '914271777:AAE0XrTZtXxQ8lnipXWKjPWtLb7Bn40kDMU'
 
-conn = mysql.connector.connect(user='root', password='0000001', host='127.0.0.1', database='tgbot')
+conn = mysql.connector.connect(user='root', password='0000001', host='localhost', database='tgbot')
 cursor = conn.cursor(buffered=True)
 
 dict_of_data = {'login': '0', 'password': '0', 'grade': '0',
                 'school_id': '0', 'grade_id': '0', 'name': '0',
                 'stud_id': [], 'last_stud_id': '0', 'ad': '0',
-                'subject': '0', 'student': '0', 'old_subject': '0'}   # словарь с аудентификаторными данными
+                'subject': '0', 'student': '0', 'old_subject': '0',
+                'day': '0', 'new_timetable': '0'}   # словарь с аудентификаторными данными
 cancel_word = 'отмена'
 back_word = 'Назад в админ. меню'
 dict_of_admins = {704369002: "1",
@@ -319,6 +320,8 @@ def set_mark(mark):
                        'VALUES ("{}", "{}", "{}", "{}", "{}")'.format(login[:3], grade_id, stud_id,
                                                                       dict_of_data.get('subject'), mark))
     conn.commit()
+    cursor.execute('SELECT name FROM students WHERE stud_id = "{}"'.format(dict_of_data.get('last_stud_id')))
+    dict_of_data['name'] = cursor.fetchall()[0][0]
     return True
 
 
@@ -340,15 +343,17 @@ def change_ad(new_ad_text):
     conn.commit()
 
 
-def set_tt(timetable, day):
+def set_tt(timetable):
     timetable += '\n'
-    timetable = timetable.replace(';', '\n')
+    if dict_of_data.get('new_timetable') == '0':
+        dict_of_data['new_timetable'] = ''
+    dict_of_data['new_timetable'] += timetable
     school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
     dict_of_days_rus = {'Пн': 'Mon', 'Вт': 'Tue', 'Ср': 'Wed',  # для внесения в бд нового расписания(по колонкам дни на англ)
                         'Чт': 'Thu', 'Пт': 'Fri', 'Сб': 'Sat'}
     cursor.execute('UPDATE timetable SET {} = "{}" '
-                   'WHERE school_id = "{}" AND grade_id = "{}"'.format(dict_of_days_rus.get(day),
-                                                                       timetable, school_id, grade_id))
+                   'WHERE school_id = "{}" AND grade_id = "{}"'.format(dict_of_days_rus.get(dict_of_data.get('day')),
+                                                                       dict_of_data.get('new_timetable'), school_id, grade_id))
     conn.commit()
 
 

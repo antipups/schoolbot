@@ -400,9 +400,9 @@ def accept(message):    # установка оценки,
         bot.send_message(chat_id, 'Операция отменена.')
         return
     if data.set_mark(message.text):
-        bot.send_message(chat_id, '{}.'.format(message.text), reply_markup=return_markup())
+        bot.send_message(chat_id, '{} - {}.'.format(data.dict_of_data.get('name'), message.text), reply_markup=return_markup())
     else:
-        msg = bot.send_message(chat_id, 'Оценка не установлена, ввидите число:')
+        msg = bot.send_message(chat_id, 'Оценка не установлена, введите число:')
         bot.register_next_step_handler(msg, accept)
 
 
@@ -527,10 +527,11 @@ def pre_change_tt2(message):  # функция для ввода расписа�
                                reply_markup=days_tt())
         bot.register_next_step_handler(msg, pre_change_tt2)
         return
-    msg = bot.send_message(chat_id, 'Введите новое '
-                                    'расписание (символ-разделитель - ;)\nПример:\nВы вводите: '
-                                    'Русский язык;Математика ;\n'
-                                    'Вывелось:\nРусский язык\nМатематика:')
+    elif data.dict_of_data.get('day') == '0':
+        data.dict_of_data['day'] = message.text
+    msg = bot.send_message(chat_id, 'Старое расписание на {} уничтожено, '
+                                    'выберите предметы для нвоого расссписание на этот день:'.format(data.dict_of_data.get('day')),
+                           reply_markup=keyboard_of_subjects_for_admin())
     # ввод нового расписания, символ разделитель это для
     # смещение коретки на некст строку
     bot.register_next_step_handler(msg, change_tt)
@@ -540,15 +541,13 @@ def change_tt(message):  # функция на смену расписания
     chat_id = message.from_user.id
     if message.text == data.back_word:
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
+        data.dict_of_data['new_timetable'] = '0'
         return
-    temp_message = bot.forward_message(chat_id, chat_id, message.message_id - 2)
-    day = temp_message.text
-    bot.delete_message(chat_id, temp_message.message_id)
-    data.set_tt(message.text, day)
+    data.set_tt(message.text)
     # установка расписания
-    msg = bot.send_message(chat_id, 'Операция успешно завершена, вы можете продолжить'
-                                    ' обновлять раписание.')
-    bot.register_next_step_handler(msg, pre_change_tt2)
+    msg = bot.send_message(chat_id, 'Предмет добавлен в заданный день, для продолжения '
+                                    'кликайте на нужный предмет, для завершения *Назад*.')
+    bot.register_next_step_handler(msg, change_tt)
 
 
 def studs(ls_of_stud):  # генерация кнопок студентов
