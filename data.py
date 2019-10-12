@@ -1190,6 +1190,15 @@ def get_info_about_grade(id):
     return 'Введенный класс не найден, попробуйте ещё раз.'
 
 
+def export_subjects(id):
+    try:
+        cursor.execute('SELECT subject FROM grades_with_subjects WHERE school_id = "{}" AND '
+                       'grade_id = "{}"'.format(id[:3], id[3:]))
+    except mysql.connector.errors.ProgrammingError:
+        return []
+    else:
+        return cursor.fetchall()
+
 
 if __name__ == '__main__':
     pass

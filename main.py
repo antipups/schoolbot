@@ -1177,7 +1177,7 @@ def import_timetable(message):
 def export_menu():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
     markup.add(types.KeyboardButton(text='учеников'), types.KeyboardButton(text='учителей'))
-    markup.add(types.KeyboardButton(text='Назад в админ. меню'))
+    markup.add(types.KeyboardButton(text='предметов'), types.KeyboardButton(text='Назад в админ. меню'))
     return markup
 
 
@@ -1270,7 +1270,31 @@ def edit_url_of_invite(message):
     if data.set_code(message.text):
         bot.send_message(chat_id, 'Ссылка успешно обновлена')
     else:
-        bot.register_next_step_handler(bot.send_message(chat_id, 'Ссылка не удовлетворяет стандартам, введите новую ссылку:'), edit_url_of_invite)
+        bot.register_next_step_handler(bot.send_message(chat_id, 'Ссылка не удовлетворяет '
+                                                                 'стандартам, введите новую ссылку:'),
+                                       edit_url_of_invite)
+
+
+def export_subjects(message):
+    chat_id = message.from_user.id
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Операция отменена.', reply_markup=choose())
+        return
+    subjects = data.export_subjects(message.text)
+    if subjects:
+        subjects = [x[0] for x in subjects]
+        subjects = '\n'.join(subjects)
+        print(subjects)
+        with open('subjects.txt', 'w') as f:
+            f.write(subjects)
+        with open('subjects.txt', 'rb') as f:
+            bot.send_document(chat_id, f)
+        os.remove('subjects.txt')
+    else:
+        bot.register_next_step_handler(bot.send_message(chat_id, 'Введенного класса не существует,'
+                                                                 ' или у него нет предметов,'
+                                                                 ' введите заного или назад:'),
+                                       export_subjects)
 
 
 @bot.message_handler(content_types=['text'])
@@ -1439,6 +1463,11 @@ def text(message):
             return
         msg = bot.send_message(chat_id, 'Введите предмет который хотите редактировать:', reply_markup=keyboard_of_subjects_for_admin())
         bot.register_next_step_handler(msg, pre_edit_subject)
+
+    elif text == 'предметов':
+        bot.send_message(chat_id, 'Доступные школы, Название, ID класса:\n' + data.get_list_of_grades_for_admin())
+        bot.register_next_step_handler(bot.send_message(chat_id, 'Введите класс предметы которого хотите импортировать:'),
+                                       export_subjects)
 
 
 if __name__ == '__main__':
