@@ -11,7 +11,7 @@ dict_of_data = {'login': '0', 'password': '0', 'grade': '0',
                 'school_id': '0', 'grade_id': '0', 'name': '0',
                 'stud_id': [], 'last_stud_id': '0', 'ad': '0',
                 'subject': '0', 'student': '0', 'old_subject': '0',
-                'day': '0', 'new_timetable': '0'}   # словарь с аудентификаторными данными
+                'day': '0', 'new_timetable': '0', 'subjects': '0'}   # словарь с аудентификаторными данными
 cancel_word = 'отмена'
 back_word = 'Назад в админ. меню'
 dict_of_admins = {704369002: "1",
@@ -1182,10 +1182,9 @@ def check_password_of_teachers():
     return False
 
 
-def get_info_about_grade(id):
-    cursor.execute('SELECT * FROM grades WHERE school_id = "{}" AND grade_id = "{}"'.format(id[:3], id[3:]))
+def get_info_about_grade():
+    cursor.execute('SELECT * FROM grades WHERE school_id = "{}" AND grade_id = "{}"'.format(dict_of_data.get('school_id'), dict_of_data.get('grade_id')))
     if cursor.fetchall():
-        dict_of_data['school_id'], dict_of_data['grade_id']= id[:3], id[3:]
         return 'Введите новую ссылку-приглашение:'
     return 'Введенный класс не найден, попробуйте ещё раз.'
 
@@ -1198,6 +1197,44 @@ def export_subjects(id):
         return []
     else:
         return cursor.fetchall()
+
+
+def write_class_for_edit_subject():
+    school_id, grade_id = dict_of_data['school_id'], dict_of_data['grade_id']
+    cursor.execute('SELECT * FROM grades WHERE school_id = "{}" '
+                   'AND grade_id = "{}"'.format(school_id, grade_id))
+    if len(cursor.fetchall()) == 0:
+        return 'Введенного класса не найдено, попробуйте ввести ещё раз:'
+
+    cursor.execute('SELECT * FROM grades_with_subjects WHERE school_id = "{}" AND'
+                   ' grade_id = "{}"'.format(school_id, grade_id))
+    res = cursor.fetchall()
+    if len(res) == 0:
+        return 'Предметы для заданного класса не прописаны.'
+    result = 'Предметы в классе:\n'
+    for i in res:
+        result += i[2] + ';\n'
+    result += '\nЧто вы хотите сделать?'
+    return result
+
+
+def add_subject_in_grade(subject):
+    cursor.execute('SELECT * FROM subjects WHERE subject = "{}"'.format(subject))
+    if len(cursor.fetchall()) == 0:
+        return 'Введенного предмета в базе не найдено, повторите ввод:'
+    try:
+        cursor.execute('INSERT INTO grades_with_subjects (school_id, grade_id, subject) '
+                       'VALUES ("{}", "{}", "{}")'.format(dict_of_data.get('school_id'), dict_of_data.get('grade_id'), subject))
+    except mysql.connector.errors.IntegrityError:
+        return 'Данный предмет уже привязан к данному классу.'
+    conn.commit()
+    return 'Предмет успешно добавлен в класс, если хотите продолжить добавлять жмите на нужные предметы, или *Назад*'
+
+
+def remove_subject_in_grade(subject):
+    cursor.execute('DELETE FROM grades_with_subjects WHERE school_id = "{}" AND '
+                   'grade_id = "{}" AND subject = "{}"'.format(dict_of_data.get('school_id'), dict_of_data.get('grade_id'), subject))
+    conn.commit()
 
 
 if __name__ == '__main__':

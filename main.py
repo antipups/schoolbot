@@ -89,6 +89,9 @@ def callback(obj):
     elif obj.data == 'ro':  # выбор дз для изменения
         teacher_edit(obj)
 
+    elif obj.data == 'subjects':
+        edit_subject_in_class(obj)
+
     elif obj.data == 'dz_class':  # выбор дз для изменения
         msg = bot.send_message(chat_id, 'Введите домашнее задание:')
         bot.register_next_step_handler(msg, change_homework_class)
@@ -116,6 +119,9 @@ def callback(obj):
     elif obj.data == 'td':  # удаление препода
         data.delete_teacher()
         bot.send_message(chat_id, 'Операция выполнена успешно.')
+
+    elif obj.data == 'ссылпригл':
+        pre_edit_url_of_invite(obj)
 
     elif obj.data == 'назвшк':
         msg = bot.send_message(chat_id, 'Введите новое название школы:')
@@ -998,6 +1004,8 @@ def grade_butt():
     markup.add(types.InlineKeyboardButton(text='Фото классного руководителя', callback_data='фотклрук'))
     markup.add(types.InlineKeyboardButton(text='Имя классного руководителя', callback_data='имклрук'))
     markup.add(types.InlineKeyboardButton(text='Доска объявлений', callback_data='доскоб'))
+    markup.add(types.InlineKeyboardButton(text='Ссылка-приглашение', callback_data='ссылпригл'))
+    markup.add(types.InlineKeyboardButton(text='Предметы', callback_data='subjects'))
     markup.add(types.InlineKeyboardButton(text='Удаление', callback_data='удкл'))
     return markup
 
@@ -1087,8 +1095,7 @@ def edit_admin():   # клавиатурка админа
     markup.add(types.KeyboardButton(text='Реклама'))
     markup.add(types.KeyboardButton(text='Школа'),
                types.KeyboardButton(text='Класс.'))
-    markup.add(types.KeyboardButton(text='Расписание'),
-               types.KeyboardButton(text='Ссылку-приглашение'))
+    markup.add(types.KeyboardButton(text='Расписание'))
     markup.add(types.KeyboardButton(text='Учеников'),
                types.KeyboardButton(text='Преподователей'))
     markup.add(types.KeyboardButton(text='предмет'),
@@ -1250,15 +1257,9 @@ def edit_subject(message):
 
 def pre_edit_url_of_invite(message):
     chat_id = message.from_user.id
-    if message.text == data.back_word:
-        bot.send_message(chat_id, 'Операция отменена.', reply_markup=choose())
-        return
-    result = data.get_info_about_grade(message.text)
+    result = data.get_info_about_grade()
     msg = bot.send_message(chat_id, result)
-    if result.find('ещё') > -1:
-        bot.register_next_step_handler(msg, pre_edit_url_of_invite)
-    else:
-        bot.register_next_step_handler(msg, edit_url_of_invite)
+    bot.register_next_step_handler(msg, edit_url_of_invite)
 
 
 def edit_url_of_invite(message):
@@ -1295,6 +1296,49 @@ def export_subjects(message):
                                                                  ' или у него нет предметов,'
                                                                  ' введите заного или назад:'),
                                        export_subjects)
+
+
+def keyboard_of_edit_subjects_grade():
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    markup.add(types.KeyboardButton(text='Добавить'))
+    markup.add(types.KeyboardButton(text='Назад в админ. меню'))
+    return markup
+
+
+def edit_subject_in_class(message):
+    chat_id = message.from_user.id
+    res = data.write_class_for_edit_subject()
+    if res.find('хотите') > -1:
+        bot.send_message(chat_id, res, reply_markup=keyboard_of_edit_subjects_grade())
+    else:
+        bot.register_next_step_handler(bot.send_message(chat_id, res), edit_subject_in_class)
+
+
+def add_subject_in_grade(message):
+    chat_id = message.from_user.id
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Операция отменена.', reply_markup=choose())
+        return
+    msg = bot.send_message(chat_id, data.add_subject_in_grade(message.text))
+    bot.register_next_step_handler(msg, add_subject_in_grade)
+
+
+def keyboard_of_subjects_for_delete():
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
+    for i in data.export_subjects(data.dict_of_data.get('school_id') + data.dict_of_data.get('grade_id')):
+        markup.add(types.KeyboardButton(text=i[0]))
+    markup.add(types.KeyboardButton(text='Назад в админ. меню'))
+    return markup
+
+
+def remove_subject_in_grade(message):
+    chat_id = message.from_user.id
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Операция отменена.', reply_markup=choose())
+        return
+    data.remove_subject_in_grade(message.text)
+    bot.register_next_step_handler(bot.send_message(chat_id, 'Предмет удален, если хотите продолжить, '
+                                                             'вводите предметы или жмите *Назад*'), remove_subject_in_grade)
 
 
 @bot.message_handler(content_types=['text'])
@@ -1398,10 +1442,6 @@ def text(message):
                          reply_markup=edit_baner(ls_of_buttons))
         bot.register_next_step_handler(msg, pre_change_banner_or_text)
 
-    elif text == 'Ссылку-приглашение':
-        msg = bot.send_message(chat_id, 'Введите код класса который хотите редактировать:')
-        bot.register_next_step_handler(msg, pre_edit_url_of_invite)
-
     elif text == 'Школа':
         bot.send_message(chat_id, 'Доступные школы , их ID:\n' + data.get_list_of_schoold_for_admin())
         msg = bot.send_message(chat_id, 'Введите ID школы которую хотите отредактировать (3 символа):')
@@ -1468,6 +1508,16 @@ def text(message):
         bot.send_message(chat_id, 'Доступные школы, Название, ID класса:\n' + data.get_list_of_grades_for_admin())
         bot.register_next_step_handler(bot.send_message(chat_id, 'Введите класс предметы которого хотите импортировать:'),
                                        export_subjects)
+
+    elif text == 'Добавить':
+        msg = bot.send_message(chat_id, 'Выберите какой предмет хотите добавить:',
+                               reply_markup=keyboard_of_subjects_for_admin())
+        bot.register_next_step_handler(msg, add_subject_in_grade)
+
+    elif text == 'Удалить':
+        msg = bot.send_message(chat_id, 'Выберите какой предмет хотите удалить:',
+                               reply_markup=keyboard_of_subjects_for_delete())
+        bot.register_next_step_handler(msg, remove_subject_in_grade)
 
 
 if __name__ == '__main__':
