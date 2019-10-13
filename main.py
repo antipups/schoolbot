@@ -935,7 +935,7 @@ def create_teacher_password(message):
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.new_teacher_password(message.text):
-        msg = bot.send_message(chat_id, 'Введите предмет учителя:')
+        msg = bot.send_message(chat_id, 'Введите предмет учителя:', reply_markup=keyboard_of_subjects_for_admin())
         bot.register_next_step_handler(msg, create_teacher_subj)
     else:
         msg = bot.send_message(chat_id, 'Пароль не может быть таким, введите другой:')
@@ -1300,7 +1300,7 @@ def export_subjects(message):
 
 def keyboard_of_edit_subjects_grade():
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
-    markup.add(types.KeyboardButton(text='Добавить'))
+    markup.add(types.KeyboardButton(text='Добавить'), types.KeyboardButton(text='Удалить'))
     markup.add(types.KeyboardButton(text='Назад в админ. меню'))
     return markup
 
