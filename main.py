@@ -120,6 +120,9 @@ def callback(obj):
         data.delete_teacher()
         bot.send_message(chat_id, 'Операция выполнена успешно.')
 
+    elif obj.data == 'ttable':
+        pre_change_tt(obj)
+
     elif obj.data == 'ссылпригл':
         pre_edit_url_of_invite(obj)
 
@@ -187,6 +190,7 @@ def person_room(message):   # комната школьника
     # если код неверен выходим, если верен выводим оценки
     if marks is None:
         bot.send_message(message.from_user.id, 'Неверный код, или у ученика нет оценок.')
+        data.dict_of_data['student'] = '0'
         return
     bot.send_message(chat_id, marks)   # выводим оценки
     with open(data.get_res('картинка' + str(random.randint(1, 5))), 'rb') as f:
@@ -507,13 +511,6 @@ def days_tt():  # клавиатурка для расписания
 
 def pre_change_tt(message):  # функция для ввода дня изменяемого раписанием
     chat_id = message.from_user.id
-    if message.text == data.back_word:
-        bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
-        return
-    if data.get_grade(message.text) is None:
-        msg = bot.send_message(chat_id, 'Неверный код, попробуйте заного ввести код:')
-        bot.register_next_step_handler(msg, pre_change_tt)
-        return
     msg = bot.send_message(chat_id, 'Кликните на день, который хотите изменить:',
                            reply_markup=days_tt())
     # выбор через клавиатурку дня для смены расписания
@@ -533,8 +530,7 @@ def pre_change_tt2(message):  # функция для ввода расписа�
                                reply_markup=days_tt())
         bot.register_next_step_handler(msg, pre_change_tt2)
         return
-    elif data.dict_of_data.get('day') == '0':
-        data.dict_of_data['day'] = message.text
+    data.dict_of_data['day'] = message.text
     msg = bot.send_message(chat_id, 'Старое расписание на {} уничтожено, '
                                     'выберите предметы для нового рассписания на этот день:'.format(data.dict_of_data.get('day')),
                            reply_markup=keyboard_of_subjects_for_admin())
@@ -850,13 +846,15 @@ def keyboard_for_only_grade():
         return markup
     return False
 
+
 def set_desk(message):
     chat_id = message.from_user.id
     if message.text == data.back_word:
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.set_desk(message.text):
-        msg = bot.send_message(chat_id, 'Доска успешно установленна.\nВыберите предметы которые будут выводится у учителя:',
+        msg = bot.send_message(chat_id, 'Доска успешно установленна.\n'
+                                        'Выберите предметы которые будут выводится у учителя:',
                                reply_markup=keyboard_for_only_grade())
         bot.register_next_step_handler(msg, set_of_subject_for_class)
     else:
@@ -1016,6 +1014,7 @@ def grade_butt():
     markup.add(types.InlineKeyboardButton(text='Доска объявлений', callback_data='доскоб'))
     markup.add(types.InlineKeyboardButton(text='Ссылка-приглашение', callback_data='ссылпригл'))
     markup.add(types.InlineKeyboardButton(text='Предметы', callback_data='subjects'))
+    markup.add(types.InlineKeyboardButton(text='Расписание', callback_data='ttable'))
     markup.add(types.InlineKeyboardButton(text='Удаление', callback_data='удкл'))
     return markup
 
@@ -1105,7 +1104,6 @@ def edit_admin():   # клавиатурка админа
     markup.add(types.KeyboardButton(text='Реклама'))
     markup.add(types.KeyboardButton(text='Школа'),
                types.KeyboardButton(text='Класс.'))
-    markup.add(types.KeyboardButton(text='Расписание'))
     markup.add(types.KeyboardButton(text='Учеников'),
                types.KeyboardButton(text='Преподователей'))
     markup.add(types.KeyboardButton(text='предмет'),
@@ -1462,11 +1460,6 @@ def text(message):
         bot.send_message(chat_id, 'Доступные школы, Название, ID класса:\n' + data.get_list_of_grades_for_admin())
         msg = bot.send_message(chat_id, 'Введите ID класса которого вы хотите редактировать (6 символов):')
         bot.register_next_step_handler(msg, edit_grade)
-
-    elif text == 'Расписание':  # редактировать подневно расписание
-        bot.send_message(chat_id, 'Доступные школы, Название, ID класса:\n' + data.get_list_of_grades_for_admin())
-        msg = bot.send_message(chat_id, 'Введите код класса (6 символов):')
-        bot.register_next_step_handler(msg, pre_change_tt)
 
     elif text == 'Учеников':    # редактировать учеников класса
         bot.send_message(chat_id, 'Доступные школы, Название, ID класса:\n' + data.get_list_of_grades_for_admin())
