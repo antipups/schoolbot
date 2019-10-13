@@ -1240,5 +1240,12 @@ def remove_subject_in_grade(subject):
     conn.commit()
 
 
+def return_subjects_of_grade():
+    cursor.execute('SELECT subject FROM grades_with_subjects WHERE school_id = "{}" AND '
+                   'grade_id = "{}"'.format(dict_of_data.get('school_id'), dict_of_data.get('grade_id')))
+    return cursor.fetchall()
+
+
+
 if __name__ == '__main__':
     pass
