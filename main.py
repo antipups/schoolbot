@@ -1236,7 +1236,8 @@ def pre_edit_subject(message):
     for i in data.get_all_subjects():
         if i[1] == message.text:
             data.dict_of_data['old_subject'] = message.text
-            bot.register_next_step_handler(bot.send_message(chat_id, "Введите новое название предмета:"), edit_subject)
+            bot.register_next_step_handler(bot.send_message(chat_id, "Введите новое название предмета "
+                                                                     "(-1 если хотите его удалить):"), edit_subject)
             return
     else:
         bot.register_next_step_handler(bot.send_message(chat_id, "Введенный предмет не найден, попробуйте ещё раз:"),

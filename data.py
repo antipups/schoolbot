@@ -1141,7 +1141,10 @@ def get_all_subjects_for_teacher():
 
 def edit_subject(subject):    # создаем предмет
     try:
-        cursor.execute('UPDATE subjects SET subject = "{}" WHERE subject = "{}"'.format(subject, dict_of_data.get('old_subject')))
+        if subject == '-1':
+            cursor.execute('DELETE FROM subjects WHERE subject = "{}"'.format(dict_of_data.get('old_subject')))
+        else:
+            cursor.execute('UPDATE subjects SET subject = "{}" WHERE subject = "{}"'.format(subject, dict_of_data.get('old_subject')))
     except mysql.connector.errors.IntegrityError:  # проверяем на дубликаты
         return 'Данный предмет существует, введите другой:'
     except mysql.connector.errors.DataError:  # если ввел какую-то длинную дресню
@@ -1150,7 +1153,7 @@ def edit_subject(subject):    # создаем предмет
         return 'Введен плохой символ, введите буквенные символы:'
     else:
         conn.commit()
-        return 'Предмет успешно редактирован, если хотите редактировать ' \
+        return 'Предмет успешно редактирован/удален, если хотите редактировать ' \
                'ещё какие-то предметы, выбирайте их из списка или нажмите *Назад*'
 
 
