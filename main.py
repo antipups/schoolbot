@@ -1096,7 +1096,7 @@ def set_desk2(message):
         bot.send_message(chat_id, 'Доска обновлена')
     else:
         msg = bot.send_message(chat_id, 'Введенная информация не подходит, введите новую:')
-        bot.register_next_step_handler(msg, set_desk)
+        bot.register_next_step_handler(msg, set_desk2)
 
 
 def edit_admin():   # клавиатурка админа
