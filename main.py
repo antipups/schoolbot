@@ -237,6 +237,17 @@ def keyboard_of_subjects_for_teacher():
     return False
 
 
+def keyboard_for_only_grade():
+    result = data.return_subjects_of_grade()
+    if result:  # если предметы есть, заходим в меню и выводим все предметы, иначе не выводим меню, а говорим что тут пусто
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
+        for i in result:
+            markup.add(types.KeyboardButton(text=i[0]))
+        markup.add(types.KeyboardButton(text=data.back_word))
+        return markup
+    return False
+
+
 def teacher_room(message):
     chat_id = message.from_user.id
     if message.text.lower() == data.cancel_word:
@@ -836,17 +847,6 @@ def keyboard_of_subjects_for_admin():   # функция дл клавиатур
     return False
 
 
-def keyboard_for_only_grade():
-    result = data.return_subjects_of_grade()
-    if result:  # если предметы есть, заходим в меню и выводим все предметы, иначе не выводим меню, а говорим что тут пусто
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
-        for i in result:
-            markup.add(types.KeyboardButton(text=i[0]))
-        markup.add(types.KeyboardButton(text=data.back_word))
-        return markup
-    return False
-
-
 def set_desk(message):
     chat_id = message.from_user.id
     if message.text == data.back_word:
@@ -855,7 +855,7 @@ def set_desk(message):
     if data.set_desk(message.text):
         msg = bot.send_message(chat_id, 'Доска успешно установленна.\n'
                                         'Выберите предметы которые будут выводится у учителя:',
-                               reply_markup=keyboard_for_only_grade())
+                               reply_markup=keyboard_of_subjects_for_admin())
         bot.register_next_step_handler(msg, set_of_subject_for_class)
     else:
         msg = bot.send_message(chat_id, 'Введенная информация не подходит, введите новую:')

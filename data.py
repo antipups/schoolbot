@@ -1132,9 +1132,11 @@ def get_all_subjects():
 
 
 def get_all_subjects_for_teacher():
-    cursor.execute('SELECT grade_id FROM grades WHERE number_grade = "{}"'.format(dict_of_data.get('login')[4:]))
+    cursor.execute('SELECT grade_id FROM grades WHERE number_grade = "{}" AND school_id = "{}"'.format(dict_of_data.get('login')[4:], dict_of_data.get('login')[:3]))
+    # print(dict_of_data.get('login')[4:], cursor.fetchall())
     try:
         dict_of_data['grade_id'] = cursor.fetchall()[0][0]
+        # print(dict_of_data.get('grade_id'))
     except IndexError:
         return None
     cursor.execute('SELECT subject FROM grades_with_subjects WHERE school_id = "{}" AND'
