@@ -252,7 +252,7 @@ def teacher_room(message):
     classroom_teacher = data.check_classroom_teacher()      # ПРОВЕРКА НА КЛАССНОГО РУКОВОДИТЕЛЯ
     if classroom_teacher:
         if keyboard_of_subjects_for_teacher() is False:
-            bot.send_message(chat_id, 'Предметов нет.')
+            bot.send_message(chat_id, 'Предметов / класса нет.')
             return
         msg = bot.send_message(chat_id, 'Выберите устанавливаемый предмет:',
                                reply_markup=keyboard_of_subjects_for_teacher())
@@ -280,7 +280,7 @@ def action_for_class():   # кнопки для классного руково�
 
 def for_class_room(message):
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
+    if message.text.lower() == 'вернутся в меню':
         bot.send_message(chat_id, 'Операция отменена.')
         return
     for i in data.get_all_subjects():
