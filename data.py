@@ -844,30 +844,23 @@ def get_invite_url():   # возвращаем ссылку приглос
 def delete_school():
     school_id = dict_of_data.get('school_id')
     cursor.execute('DELETE FROM schools WHERE school_id = "{}"'.format(school_id))
-    conn.commit()
     cursor.execute('DELETE FROM grades WHERE school_id = "{}"'.format(school_id))
-    conn.commit()
     cursor.execute('DELETE FROM students WHERE school_id = "{}"'.format(school_id))
-    conn.commit()
     cursor.execute('DELETE FROM timetable WHERE school_id = "{}"'.format(school_id))
-    conn.commit()
     cursor.execute('DELETE FROM homework WHERE school_id = "{}"'.format(school_id))
-    conn.commit()
     cursor.execute('DELETE FROM marks WHERE school_id = "{}"'.format(school_id))
+    cursor.execute('DELETE FROM grades_with_subjects WHERE school_id = "{}"'.format(school_id))
     conn.commit()
 
 
 def delete_grade():
     school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
     cursor.execute('DELETE FROM grades WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))
-    conn.commit()
     cursor.execute('DELETE FROM marks WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))
-    conn.commit()
     cursor.execute('DELETE FROM students WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))
-    conn.commit()
     cursor.execute('DELETE FROM timetable WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))
-    conn.commit()
     cursor.execute('DELETE FROM homework WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))
+    cursor.execute('DELETE FROM grades_with_subjects WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))
     conn.commit()
 
 
@@ -1249,7 +1242,6 @@ def return_subjects_of_grade():
     cursor.execute('SELECT subject FROM grades_with_subjects WHERE school_id = "{}" AND '
                    'grade_id = "{}"'.format(dict_of_data.get('school_id'), dict_of_data.get('grade_id')))
     return cursor.fetchall()
-
 
 
 if __name__ == '__main__':
