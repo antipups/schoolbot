@@ -855,6 +855,13 @@ def delete_school():
 
 def delete_grade():
     school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
+    cursor.execute('SELECT number_grade FROM grades WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))
+    try:
+        teacher = cursor.fetchall()[0][0]
+    except:
+        'Учителя нет'
+    else:
+        cursor.execute('DELETE FROM teachers WHERE teacher_id = "{}"'.format('к' + teacher))
     cursor.execute('DELETE FROM grades WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))
     cursor.execute('DELETE FROM marks WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))
     cursor.execute('DELETE FROM students WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))

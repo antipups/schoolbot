@@ -739,9 +739,7 @@ def create_grade(message):
         bot.send_message(chat_id, 'Вы вернулись в админ. панель:', reply_markup=choose())
         return
     if data.check_school(message.text):  # проверка, существует ли введенная школа
-        msg = bot.send_message(chat_id, 'Введите ID класса (3 символа, '
-                                        'желательный шифр - год поступления + буква,'
-                                        'пример 19б или же без буквы, 190):')
+        msg = bot.send_message(chat_id, 'Введите ID класса (3 символа):')
         bot.register_next_step_handler(msg, new_grade)
     else:
         msg = bot.send_message(chat_id, 'Школа с введенным ID не найдена, попробуйте ещё раз:')
