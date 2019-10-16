@@ -232,7 +232,7 @@ def keyboard_of_subjects_for_teacher():
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
         for i in result:
             markup.add(types.KeyboardButton(text=i[0]))
-        markup.add(types.KeyboardButton(text='Вернутся в меню'))
+        markup.add(types.KeyboardButton(text='Вернуться в меню'))
         return markup
     return False
 
@@ -291,7 +291,7 @@ def action_for_class():   # кнопки для классного руково�
 
 def for_class_room(message):
     chat_id = message.from_user.id
-    if message.text.lower() == 'вернутся в меню':
+    if message.text.lower() == 'вернуться в меню':
         bot.send_message(chat_id, 'Операция отменена.')
         return
     for i in data.get_all_subjects():
@@ -361,13 +361,13 @@ def change_hw_or_marks(message):
         return
     bot.send_message(chat_id, 'Выберите действие: ',
                      reply_markup=action())
-    bot.send_message(chat_id, 'Если хотите вернутся к выбору классов, нажмите кнопку *Вернутся*',
+    bot.send_message(chat_id, 'Если хотите вернуться к выбору классов, нажмите кнопку *Вернуться*',
                      reply_markup=return_markup())
 
 
 def return_markup():
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
-    markup.add(types.KeyboardButton(text='Вернутся в меню'))
+    markup.add(types.KeyboardButton(text='Вернуться в меню'))
     return markup
 
 
@@ -1387,7 +1387,7 @@ def text(message):
 
     password = data.check_password_of_teachers()
     if data.check_password_of_teachers() is not False:
-        if text == 'Вернутся в меню':
+        if text == 'Вернуться в меню':
             message.text = password
             teacher_room(message)
             return
