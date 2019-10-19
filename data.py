@@ -15,7 +15,7 @@ dict_of_data = {'login': '0', 'password': '0', 'grade': '0',
 cancel_word = 'отмена'
 back_word = 'Назад в админ. меню'
 dict_of_admins = {704369002: "1",
-                  }
+                  663347163: "1"}
 
 
 def get_res(text):   # для получения рекламы
@@ -150,7 +150,10 @@ def get_timetable_on_tomorrow():
     school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
     cursor.execute('SELECT * FROM timetable WHERE school_id = "{}" '
                    'AND grade_id = "{}"'.format(school_id, grade_id))
-    answer = list(cursor.fetchall()[0][2:])
+    try:
+        answer = list(cursor.fetchall()[0][2:])
+    except IndexError:
+        return 'Перезайдите пожалуйста (/start)'
     try:
         answer[0] = 'Понедельник:\n' + answer[0]
         answer[1] = 'Вторник:\n' + answer[1]
@@ -176,7 +179,10 @@ def get_all_timetable():
     school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
     cursor.execute('SELECT * FROM timetable WHERE school_id = "{}" '
                    'AND grade_id = "{}"'.format(school_id, grade_id))
-    answer = list(cursor.fetchall()[0][2:])
+    try:
+        answer = list(cursor.fetchall()[0][2:])
+    except IndexError:
+        return 'Перезайдите пожалуйста (/start)'
     try:
         answer[0] = 'Пн\n' + answer[0]
         answer[1] = 'Вт\n' + answer[1]
@@ -835,7 +841,10 @@ def get_ad():   # возвращаем всю рекламку
 def get_invite_url():   # возвращаем ссылку приглос
     school_id, grade_id = dict_of_data.get('school_id'), dict_of_data.get('grade_id')
     cursor.execute('SELECT invite_url FROM grades WHERE school_id = "{}" AND grade_id = "{}"'.format(school_id, grade_id))
-    url = cursor.fetchall()[0][0]
+    try:
+        url = cursor.fetchall()[0][0]
+    except IndexError:
+        return 'Перезайдите пожалуйста (/start)'
     if url == '-1':
         return 'Ссылки-приглашения не существует.'
     return url
@@ -872,8 +881,9 @@ def delete_grade():
 
 
 def import_stud(new_students):
+    # print(new_students)
     failure_result = ''
-    while new_students.find(', ') > -1: # цикл бежит по строкам
+    while new_students.find(', ') > -1:  # цикл бежит по строкам
         school_id = new_students[:new_students.find(', ')]  # получаем скул id
         new_students = new_students[new_students.find(', ') + 2:]
         grade_id = new_students[:new_students.find(', ')]   # получаем грейд id
@@ -886,7 +896,7 @@ def import_stud(new_students):
             new_students = new_students[new_students.find('\n') + 1:]
         else:   # если конец файла
             stud_id = new_students
-        if len(school_id) != 3 or len(grade_id) != 3 or len(name) > 31 or len(stud_id) != 3:    # если не по форме ученик
+        if len(school_id) != 3 or len(grade_id) != 3 or len(name) > 31 or len(stud_id) != 6:    # если не по форме ученик
             failure_result += 'Ученик не ипортирован - ' + school_id + ' ' + grade_id + ' ' \
                               + name + ' ' + stud_id + ' -- так как ученик введен не по форме;\n'
             continue

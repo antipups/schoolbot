@@ -1366,7 +1366,10 @@ def text(message):
         bot.send_message(chat_id, data.get_desk())
 
     elif text == '💬Чат':
-        bot.send_message(chat_id, 'Ссылка-приглашение:\n' + data.get_invite_url())
+        url = data.get_invite_url()
+        if url.find('t.me') > -1:
+            url = 'Ссылка-приглашение:\n' + url
+        bot.send_message(chat_id, url)
         return
 
     elif text == '📰Афиша, новости':
@@ -1379,6 +1382,9 @@ def text(message):
         bot.send_message(chat_id, data.print_hw())
 
     elif text == 'Оценки':
+        if data.dict_of_data.get('school_id') == '0' or data.dict_of_data.get('grade_id') == '0':
+            bot.send_message(chat_id, 'Перезайдите пожалуйста (/start)')
+            return
         if data.dict_of_data.get('student') != '0':
             person_room(message)
             return
