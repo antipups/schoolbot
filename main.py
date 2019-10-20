@@ -1149,7 +1149,12 @@ def import_stud(message):
 
     file_id = message.json.get('document').get('file_id')
     file_info = bot.get_file(file_id)
-    bot.send_message(chat_id, data.import_stud(requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(data.TOKEN, file_info.file_path)).content.decode('cp1251')))
+    try:
+        bot.send_message(chat_id, data.import_stud(requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(data.TOKEN, file_info.file_path)).content.decode('utf-8')))
+    except UnicodeDecodeError:
+        bot.send_message(chat_id, data.import_stud(requests.get(
+            'https://api.telegram.org/file/bot{0}/{1}'.format(data.TOKEN, file_info.file_path)).content.decode(
+            'cp1251')))
 
 
 def import_teach(message):
@@ -1165,7 +1170,12 @@ def import_teach(message):
 
     file_id = message.json.get('document').get('file_id')
     file_info = bot.get_file(file_id)
-    bot.send_message(chat_id, data.import_teach(requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(data.TOKEN, file_info.file_path)).content.decode('cp1251')))
+    try:
+        bot.send_message(chat_id, data.import_teach(requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(data.TOKEN, file_info.file_path)).content.decode('utf-8')))
+    except UnicodeDecodeError:
+        bot.send_message(chat_id, data.import_teach(requests.get(
+            'https://api.telegram.org/file/bot{0}/{1}'.format(data.TOKEN, file_info.file_path)).content.decode(
+            'cp1251')))
 
 
 def import_timetable(message):
@@ -1182,9 +1192,15 @@ def import_timetable(message):
 
     file_id = message.json.get('document').get('file_id')
     file_info = bot.get_file(file_id)
-    bot.send_message(chat_id, data.import_timetable(
-        requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(data.TOKEN, file_info.file_path)).content.decode(
-            'cp1251')))
+    try:
+        bot.send_message(chat_id, data.import_timetable(
+            requests.get('https://api.telegram.org/file/bot{0}/{1}'.format(data.TOKEN, file_info.file_path)).content.decode(
+                'cp1251')))
+    except UnicodeDecodeError:
+        bot.send_message(chat_id, data.import_timetable(
+            requests.get(
+                'https://api.telegram.org/file/bot{0}/{1}'.format(data.TOKEN, file_info.file_path)).content.decode(
+                'utf-8')))
 
 
 def export_menu():

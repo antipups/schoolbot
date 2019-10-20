@@ -464,11 +464,13 @@ def new_teacher_subj(subj):
     if len(subj) > 31:
         return False
     login = dict_of_data.get('login')
-    cursor.execute('SELECT name_of_subject FROM teachers '
-                   'WHERE name_of_subject = "{}" AND school_id = "{}"'.format(subj, login[:3]))
+    # cursor.execute('SELECT name_of_subject FROM teachers '    # на создание клона
+    #                'WHERE name_of_subject = "{}" AND school_id = "{}"'.format(subj, login[:3]))
     # проверяем нет ли такого же учителя уже, если есть, запрещаем создавать клона
-    if cursor.fetchall():
-        return False
+    # print(cursor.fetchall())
+    # exit()
+    # if cursor.fetchall():
+    #     return False
     cursor.execute('UPDATE teachers SET name_of_subject = "{}" WHERE teacher_id = "{}"'
                    ' AND school_id = "{}"'.format(subj, login[3:], login[:3]))
     conn.commit()
