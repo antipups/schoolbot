@@ -136,7 +136,7 @@ def get_birthday():
             result += i[2] + ';\n'  # для нумерации верни str(temp)
             temp += 1
     if result:
-        result = 'А сегодня,  день рождения отмечают:\n' + result
+        result = 'А сегодня, день рождения отмечает:\n' + result
     return result
 
 
@@ -225,15 +225,17 @@ def get_marks(id):
     cursor.execute('SELECT name FROM students '
                    'WHERE school_id = "{}" AND grade_id = "{}" AND '
                    'stud_id = "{}"'.format(school_id, grade_id, stud_id))
-    marks = 'Дневник ' + cursor.fetchall()[0][0] + ':\n'
+    marks = cursor.fetchall()[0][0] + ':\n'
     dict_of_temp = {}
     for i in pre_marks:     # делаем читабельную строку для нормального вывода
         if dict_of_temp.get(i[0]) is None:
+
             dict_of_temp.update({i[0]: i[1]})
         else:
             dict_of_temp[i[0]] += ', ' + i[1]
     for i in dict_of_temp.items():
-        marks += i[0].capitalize() + ': ' + ','.join(i[1:]) + '\n'
+        marks += '_' + i[0].capitalize() + '_ : ' + ','.join(i[1:]) + '\n'
+    # print(dict_of_temp)
     return marks
 
 
@@ -1030,6 +1032,7 @@ def import_timetable(new_timetable):
 def export_students():
     cursor.execute('SELECT * FROM students WHERE school_id = "{}"'.format(dict_of_data.get('school_id')))
     result = cursor.fetchall()
+    print(result)
     if result:
         temp_ls = []  # для помещения туда одного ученика
         all_temp_ls = []  # для помещения туда всех учеников
@@ -1111,6 +1114,16 @@ def get_subject():
     cursor.execute('SELECT name_of_subject FROM teachers '  # получаем предмет учителя
                    'WHERE school_id = "{}" AND teacher_id = "{}"'.format(login[:3], login[3:]))
     return cursor.fetchall()[0][0]
+
+
+def get_school_for_export(school_id):
+    if len(school_id) != 3:
+        return True
+    cursor.execute('SELECT * FROM schools WHERE school_id = "{}"'.format(school_id))
+    if cursor.fetchall():
+        dict_of_data['school_id'] = school_id
+        return False
+    return True
 
 
 def get_school(school_id):
