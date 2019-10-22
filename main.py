@@ -28,14 +28,14 @@ def board():
     # метод для кнопок на 2-ой форме,
     # каждая кнопка имеет свое id для метода
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
-    # first_button = types.KeyboardButton(text='📆Расписание на завтра')
+    first_button = types.KeyboardButton(text='📆Расписание на завтра')
     second_button = types.KeyboardButton(text='🗓Расписание по дням')
     fourth_button = types.KeyboardButton(text='💬Чат')
-    markup.add(fourth_button, second_button)
+    markup.add(first_button, second_button)
     # third_button = types.KeyboardButton(text='📋Доска объявлений')
     # markup.add(types.KeyboardButton(text='📰Афиша, новости'),
     #            types.KeyboardButton(text='📖Домашнее задание'))
-    markup.add(types.KeyboardButton(text='Оценки'))
+    markup.add(fourth_button, types.KeyboardButton(text='Оценки'))
     return markup
 
 
