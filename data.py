@@ -115,7 +115,7 @@ def get_homework(timetable):    # добавление к расписанию �
         try:
             homework = cursor.fetchall()[0][0]  # есть ли дз по предмету
         except IndexError:
-            result += subject + ' : _Задания нет._'
+            result += subject + ' : -'
         else:
             result += subject + ' : _' + homework + '_'
         result += '\n'

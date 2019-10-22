@@ -18,7 +18,7 @@ def command_start(message):
     with open(data.get_res('картинка' + number_of_ad), 'rb') as f:
         bot.send_photo(chat_id, f.read())  # получение второго банера рекламы
     bot.send_message(chat_id, data.get_res('реклама' + number_of_ad))  # получение текста рекламы
-    bot.send_message(chat_id, '🏫 Предприятия учавствующие в проекте 🏫\n' + data.get_list_of_schools())
+    bot.send_message(chat_id, '🏫 Школы учавствующие в проекте 🏫\n' + data.get_list_of_schools())
     # получение всех школ участвующих в проекте
     msg = bot.send_message(chat_id, 'Введите индивидуальный код класса (6 символов):', reply_markup=cancel_key())
     bot.register_next_step_handler(msg, second_step)
@@ -28,14 +28,14 @@ def board():
     # метод для кнопок на 2-ой форме,
     # каждая кнопка имеет свое id для метода
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=False, resize_keyboard=True)
-    first_button = types.KeyboardButton(text='📆Расписание на завтра')
+    # first_button = types.KeyboardButton(text='📆Расписание на завтра')
     second_button = types.KeyboardButton(text='🗓Расписание по дням')
-    markup.add(first_button, second_button)
-    # third_button = types.KeyboardButton(text='📋Доска объявлений')
     fourth_button = types.KeyboardButton(text='💬Чат')
+    markup.add(fourth_button, second_button)
+    # third_button = types.KeyboardButton(text='📋Доска объявлений')
     # markup.add(types.KeyboardButton(text='📰Афиша, новости'),
     #            types.KeyboardButton(text='📖Домашнее задание'))
-    markup.add(fourth_button, types.KeyboardButton(text='Оценки'))
+    markup.add(types.KeyboardButton(text='Оценки'))
     return markup
 
 
@@ -70,6 +70,7 @@ def second_step(message):
     bot.send_message(chat_id, grade[0][4] +
                      '\n\nРасписание на {} {}:'.format(name_of_day, datetime.datetime.now().strftime("%d.%m.%Y")) + timetable,
                      reply_markup=board())
+    bot.send_message(chat_id, 'См. кнопки внизу 👇')
 
 
 def act_on_stud(stud_id):   # работа с учеником в меню админа
