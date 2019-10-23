@@ -65,12 +65,12 @@ def second_step(message):
     with open(grade[0][3], 'rb') as f:
         photo = f.read()  # получение фото классного руковод.
         bot.send_photo(chat_id, photo)
-    name_of_day = data.trans(datetime.datetime.now().strftime("%A"), '\n'.join(grade[1]))
-    name_of_day, timetable = name_of_day[:name_of_day.find('\n')], name_of_day[name_of_day.find('\n'):]
+    # name_of_day = data.trans(datetime.datetime.now().strftime("%A"), '\n'.join(grade[1]))
+    # name_of_day, timetable = name_of_day[:name_of_day.find('\n')], name_of_day[name_of_day.find('\n'):]
     bot.send_message(chat_id, grade[0][4] +
-                     '\n\nРасписание на {} {}:'.format(name_of_day, datetime.datetime.now().strftime("%d.%m.%Y")) + timetable,
+                     # '\n\nРасписание на {} {}:'.format(name_of_day, datetime.datetime.now().strftime("%d.%m.%Y")) + timetable,
+                     "\nСм. кнопки ниже 👇",
                      reply_markup=board())
-    bot.send_message(chat_id, 'См. кнопки внизу 👇')
 
 
 def act_on_stud(stud_id):   # работа с учеником в меню админа
@@ -1466,7 +1466,7 @@ def text(message):
             if i[0].find('картинка') > -1:
                 with open(i[1], 'rb') as f:
                     bot.send_photo(chat_id, f.read())
-                msg = bot.send_message(chat_id, 'Чтобы редактировать картинку выше, введите ' + i[0])
+                msg = bot.send_message(chat_id, '👆 ' + i[0])
             else:
                 bot.send_message(chat_id, i[1])
                 msg = bot.send_message(chat_id, 'Чтобы редактировать надпись выше, введите ' + i[0])
