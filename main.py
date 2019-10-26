@@ -191,9 +191,10 @@ def person_room(message):   # комната школьника
     else:
         marks = data.get_marks(data.dict_of_data.get('school_id') + data.dict_of_data.get('grade_id') + data.dict_of_data.get('student'))
     # если код неверен выходим, если верен выводим оценки
-    if marks is None:
-        bot.send_message(message.from_user.id, 'Неверный код, или у ученика нет оценок.')
-        data.dict_of_data['student'] = '0'
+    if marks == 'Оценок нет.' or marks == 'Код ученика введен не по форме.':
+        bot.send_message(message.from_user.id, marks)
+        if marks == 'Код ученика введен не по форме.':
+            data.dict_of_data['student'] = '0'
         return
     bot.send_message(chat_id, marks, parse_mode='Markdown')   # выводим оценки
     number_of_ad = str(random.randint(1, 5))
@@ -386,6 +387,10 @@ def change_homework(message):
                      reply_markup=return_markup())
 
 
+def sorts_students(x):
+    return x[7]
+
+
 def teacher_edit(message):
     chat_id = message.from_user.id
     try:    # если пользователь ошибся и перехотел вводить заного
@@ -403,6 +408,7 @@ def teacher_edit(message):
         bot.send_message(chat_id, 'Операция отменена.')
         return
     magazine = data.magazine()
+    magazine = sorted(magazine, key=sorts_students)
     if len(magazine) == 0:
         msg = bot.send_message(chat_id, 'В веденном классе нет учеников, попробуйте выбрать другой класс,'
                                         'или нажмите *Отмена* для выхода:')
@@ -1469,7 +1475,7 @@ def text(message):
                 msg = bot.send_message(chat_id, '👆 ' + i[0])
             else:
                 bot.send_message(chat_id, i[1])
-                msg = bot.send_message(chat_id, 'Чтобы редактировать надпись выше, введите ' + i[0])
+                msg = bot.send_message(chat_id, '👆  ' + i[0])
             ls_of_buttons.append(i[0])
         bot.send_message(chat_id, 'Прочтите информацию выше и выберите из панели внизу что хотите редактировать:',
                          reply_markup=edit_baner(ls_of_buttons))

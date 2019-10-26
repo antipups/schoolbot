@@ -211,8 +211,8 @@ def get_afisha():  # получение афишы всей школы
 
 
 def get_marks(id):
-    if len(id) > 12:
-        return None
+    if len(id) != 12:
+        return 'Код ученика введен не по форме.'
     school_id, grade_id, stud_id = id[:3], id[3:6], id[6:]
     # получаем код ученика, школу, класс, его уч id
     cursor.execute('SELECT name_of_subject, mark FROM marks '
@@ -221,7 +221,7 @@ def get_marks(id):
     pre_marks = cursor.fetchall()
     # получение всех оценок заданного ученика
     if len(pre_marks) == 0:
-        return None
+        return 'Оценок нет.'
     cursor.execute('SELECT name FROM students '
                    'WHERE school_id = "{}" AND grade_id = "{}" AND '
                    'stud_id = "{}"'.format(school_id, grade_id, stud_id))
@@ -1048,9 +1048,14 @@ def export_students():
         f.write(result)
 
 
+def sort_of_teachers(x):
+    return x[0], x[1]
+
+
 def export_teachers():
     cursor.execute('SELECT * FROM teachers')
     result = cursor.fetchall()
+    result = sorted(result, key=sort_of_teachers)
     if result:
         temp_ls = []  # для помещения туда одного ученика
         all_temp_ls = []  # для помещения туда всех учеников
