@@ -1144,14 +1144,12 @@ def get_school(school_id):
 def create_subject(subject):    # создаем предмет
     try:
         cursor.execute('INSERT INTO subjects (subject) VALUES ("{}")'.format(subject))
-    # except mysql.connector.errors.IntegrityError:   # проверяем на дубликаты
-    #     return 'Данный предмет существует, введите другой:'
-    # except mysql.connector.errors.DataError:    # если ввел какую-то длинную дресню
-    #     return 'Имя введенного предмета велико, введите другой:'
-    # except mysql.connector.errors.ProgrammingError:  # если ввел какой-то запретный символ
-    #     return 'Введен плохой символ, введите буквенные символы:'
-    except:
-        return 'Данный предмет невозможность создать, придумайте другое название:'
+    except pymysql.err.IntegrityError:   # проверяем на дубликаты
+        return 'Данный предмет существует, введите другой:'
+    except pymysql.err.DataError:    # если ввел какую-то длинную дресню
+        return 'Имя введенного предмета велико, введите другой:'
+    except pymysql.err.ProgrammingError:  # если ввел какой-то запретный символ
+        return 'Введен плохой символ, введите буквенные символы:'
     else:
         conn.commit()
         return 'Предмет успешно добавлен, если хотите добавить ' \
@@ -1182,14 +1180,12 @@ def edit_subject(subject):    # создаем предмет
             cursor.execute('DELETE FROM subjects WHERE subject = "{}"'.format(dict_of_data.get('old_subject')))
         else:
             cursor.execute('UPDATE subjects SET subject = "{}" WHERE subject = "{}"'.format(subject, dict_of_data.get('old_subject')))
-    # except mysql.connector.errors.IntegrityError:  # проверяем на дубликаты
-    #     return 'Данный предмет существует, введите другой:'
-    # except mysql.connector.errors.DataError:  # если ввел какую-то длинную дресню
-    #     return 'Имя введенного предмета велико, введите другой:'
-    # except mysql.connector.errors.ProgrammingError:  # если ввел какой-то запретный символ
-    #     return 'Введен плохой символ, введите буквенные символы:'
-    except:
-        return 'Предмет не изменен:'
+    except pymysql.err.IntegrityError:  # проверяем на дубликаты
+        return 'Данный предмет существует, введите другой:'
+    except pymysql.err.DataError:  # если ввел какую-то длинную дресню
+        return 'Имя введенного предмета велико, введите другой:'
+    except pymysql.err.ProgrammingError:  # если ввел какой-то запретный символ
+        return 'Введен плохой символ, введите буквенные символы:'
     else:
         conn.commit()
         return 'Предмет успешно редактирован/удален, если хотите редактировать ' \
@@ -1201,14 +1197,12 @@ def insert_in_grade_of_subject(subject):
     try:
         cursor.execute('INSERT INTO grades_with_subjects (school_id, grade_id, subject)'
                        ' VALUES ("{}", "{}", "{}")'.format(school_id, grade_id, subject))
-    # except mysql.connector.errors.IntegrityError:  # проверяем на дубликаты
-    #     return 'Данный предмет существует, введите другой:'
-    # except mysql.connector.errors.DataError:  # если ввел какую-то длинную дресню
-    #     return 'Имя введенного предмета велико, введите другой:'
-    # except mysql.connector.errors.ProgrammingError:  # если ввел какой-то запретный символ
-    #     return 'Введен плохой символ, введите буквенные символы:'
-    except:
-        return 'Предмет не добавлен в класс:'
+    except pymysql.err.IntegrityError:  # проверяем на дубликаты
+        return 'Данный предмет существует, введите другой:'
+    except pymysql.err.DataError:  # если ввел какую-то длинную дресню
+        return 'Имя введенного предмета велико, введите другой:'
+    except pymysql.err.ProgrammingError:  # если ввел какой-то запретный символ
+        return 'Введен плохой символ, введите буквенные символы:'
     else:
         conn.commit()
         return 'Предмет успешно установлен в класс, если хотите добавить ' \
@@ -1237,8 +1231,7 @@ def export_subjects(id):
     try:
         cursor.execute('SELECT subject FROM grades_with_subjects WHERE school_id = "{}" AND '
                        'grade_id = "{}"'.format(id[:3], id[3:]))
-    # except mysql.connector.errors.ProgrammingError:
-    except:
+    except pymysql.err.ProgrammingError:
         return []
     else:
         return cursor.fetchall()
@@ -1270,8 +1263,7 @@ def add_subject_in_grade(subject):
     try:
         cursor.execute('INSERT INTO grades_with_subjects (school_id, grade_id, subject) '
                        'VALUES ("{}", "{}", "{}")'.format(dict_of_data.get('school_id'), dict_of_data.get('grade_id'), subject))
-    # except mysql.connector.errors.IntegrityError:
-    except:
+    except pymysql.err.IntegrityError:
         return 'Данный предмет уже привязан к данному классу.'
     conn.commit()
     return 'Предмет успешно добавлен в класс, если хотите продолжить добавлять жмите на нужные предметы, или *Назад*'
