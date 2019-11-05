@@ -86,20 +86,24 @@ def callback(obj):
     chat_id = obj.from_user.id
 
     if obj.data == 'dz':  # выбор дз для изменения
+        bot.delete_message(chat_id, obj.message.message_id)
         msg = bot.send_message(chat_id, 'Введите домашнее задание:')
         bot.register_next_step_handler(msg, change_homework)
 
     elif obj.data == 'ro':  # выбор дз для изменения
+        bot.delete_message(chat_id, obj.message.message_id)
         teacher_edit(obj)
 
     elif obj.data == 'subjects':
         edit_subject_in_class(obj)
 
     elif obj.data == 'dz_class':  # выбор дз для изменения
+        bot.delete_message(chat_id, obj.message.message_id)
         msg = bot.send_message(chat_id, 'Введите домашнее задание:')
         bot.register_next_step_handler(msg, change_homework_class)
 
     elif obj.data == 'ro_class':  # выбор дз для изменения
+        bot.delete_message(chat_id, obj.message.message_id)
         teacher_edit_class(obj)
 
     elif obj.data == 'сш':  # смена кода школы препода
@@ -175,6 +179,8 @@ def callback(obj):
         bot.send_message(chat_id, 'Выберите действие :', reply_markup=act_on_stud(obj.data))
 
     else:   # код учителя, или же проставления оценки
+        bot.delete_message(chat_id, obj.message.message_id - 1)
+        bot.delete_message(chat_id, obj.message.message_id)
         data.dict_of_data['last_stud_id'] = obj.data
         msg = bot.send_message(chat_id, 'Введите оценку:')
         bot.register_next_step_handler(msg, accept)
@@ -427,7 +433,7 @@ def teacher_edit(message):
 
 def accept(message):    # установка оценки,
     chat_id = message.from_user.id
-    if message.text.lower() == data.cancel_word:
+    if message.text.lower() == data.cancel_word or message.text == 'Введите оценку:':
         bot.send_message(chat_id, 'Операция отменена.')
         return
     if data.set_mark(message.text):
@@ -1344,7 +1350,9 @@ def edit_subject_in_class(message):
     if res.find('хотите') > -1:
         bot.send_message(chat_id, res, reply_markup=keyboard_of_edit_subjects_grade())
     else:
-        bot.send_message(chat_id, res)
+        msg = bot.send_message(chat_id, 'Предметов в заданном классе нет;\nВыберите какой предмет хотите добавить:',
+                               reply_markup=keyboard_of_subjects_for_admin())
+        bot.register_next_step_handler(msg, add_subject_in_grade)
 
 
 def add_subject_in_grade(message):

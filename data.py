@@ -312,8 +312,11 @@ def set_mark(mark):
     if not mark.isdigit():
         return False
     login, grade = dict_of_data.get('login'), dict_of_data.get('grade')
-    cursor.execute('SELECT grade_id FROM grades '  # получаем айди класса, из его номера
-                   'WHERE school_id = "{}" AND number_grade = "{}"'.format(login[:3], grade))
+    try:
+        cursor.execute('SELECT grade_id FROM grades '  # получаем айди класса, из его номера
+                       'WHERE school_id = "{}" AND number_grade = "{}"'.format(login[:3], grade))
+    except pymysql.err.InternalError:
+        return False
     stud_id = dict_of_data.get('last_stud_id')
     grade_id = cursor.fetchall()[0][0]
     if dict_of_data.get('subject') == '0':
@@ -511,8 +514,6 @@ def change_homework_for_class(homework):
     cursor.execute('UPDATE teachers SET score = "{}" WHERE '
                    'school_id = "{}" AND teacher_id = "{}"'.format(tmp, login[:3], login[3:]))
     conn.commit()
-
-
     cursor.execute('SELECT grade_id FROM grades WHERE school_id = "{}"'   # получаем класс, который хотел редактировать учитель
                    ' AND number_grade = "{}"'.format(login[:3], grade))
     grade_id = cursor.fetchall()
