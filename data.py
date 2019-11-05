@@ -533,7 +533,7 @@ def change_homework_for_class(homework):
             cursor.execute('INSERT INTO homework (school_id, grade_id, subject, homework)'
                            ' VALUES ("{}", "{}", "{}", "{}")'.format(login[:3], grade_id, dict_of_data.get('subject'), homework))
     except:
-        return 'Введенное домашнее задание содержит запрещенные символы.'
+        return 'Введенное домашнее задание содержит запрещенные символы.'   #
     conn.commit()
     return 'Новое домашнее задание по предмету:\n{}:\n{}'.format(dict_of_data.get('subject'), homework)
 
