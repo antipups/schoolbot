@@ -535,7 +535,7 @@ def change_homework_for_class(homework):
     except:
         return 'Введенное домашнее задание содержит запрещенные символы.'
     conn.commit()
-    return 'Новое домашнее задание по предмету : {}:\n{}'.format(dict_of_data.get('subject'), homework)
+    return 'Новое домашнее задание по предмету:\n{}:\n{}'.format(dict_of_data.get('subject'), homework)
 
 
 def change_homework(homework):  # функция на изменение домашки

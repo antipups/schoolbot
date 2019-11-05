@@ -322,8 +322,10 @@ def change_homework_class(message):     # меняем дз будучи кла�
     if message.text.lower() == data.cancel_word:
         bot.send_message(chat_id, 'Операция отменена.')
         return
+    print('sex')
     new_task = data.change_homework_for_class(message.text)
-    bot.send_message(chat_id, new_task, reply_markup=return_markup())
+    bot.send_message(chat_id, new_task)
+    bot.send_message(chat_id, 'Выберите действие:', reply_markup=action_for_class())
 
 
 def teacher_edit_class(message):
@@ -389,8 +391,8 @@ def change_homework(message):
         return
     # получаем все данные, а именно логин, класс, дз
     new_task = data.change_homework(message.text)
-    bot.send_message(chat_id, 'Задание было успешно обновленно;\nНовое задание: \n' + new_task,
-                     reply_markup=return_markup())
+    bot.send_message(chat_id, 'Задание было успешно обновленно;\nНовое задание: \n' + new_task)
+    bot.send_message(chat_id, 'Выберите действие:', reply_markup=action())
 
 
 def sorts_students(x):
@@ -437,7 +439,12 @@ def accept(message):    # установка оценки,
         bot.send_message(chat_id, 'Операция отменена.')
         return
     if data.set_mark(message.text):
-        bot.send_message(chat_id, '{} - {}.'.format(data.dict_of_data.get('name'), message.text), reply_markup=return_markup())
+        bot.send_message(chat_id, '{} - {}.'.format(data.dict_of_data.get('name'), message.text))
+        if data.dict_of_data.get('login').find('к') > -1:
+            bot.send_message(chat_id, 'Выберите действие:', reply_markup=action_for_class())
+        else:
+            bot.send_message(chat_id, 'Выберите действие:', reply_markup=action())
+
     else:
         msg = bot.send_message(chat_id, 'Оценка не установлена, введите число:')
         bot.register_next_step_handler(msg, accept)
