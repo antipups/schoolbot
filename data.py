@@ -539,7 +539,6 @@ def change_homework_for_class(homework):
 
 
 def change_homework(homework):  # функция на изменение домашки
-
     login, grade = dict_of_data.get('login'), dict_of_data.get('grade')
     cursor.execute('SELECT score FROM teachers WHERE school_id = "{}" AND '
                    'teacher_id = "{}"'.format(login[:3], login[3:]))    # + прибавление балов за вход в меню выставления оценок

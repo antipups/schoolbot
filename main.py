@@ -655,7 +655,10 @@ def change_id_teacher(message):
         info[0] = 'Код школы: ' + info[0]
         info[1] = 'Код учителя: ' + info[1]
         info[2] = 'Пароль учителя: ' + info[2]
-        info[3] = 'Предмет учителя: ' + info[3]
+        if info[3].find('к') > -1:
+            info[3] = 'Классный руководитель ' + info[3][1:] + ' класса'
+        else:
+            info[3] = 'Предмет учителя: ' + info[3]
         try:
             info[4] = 'Баллы учителя: ' + info[4]
         except TypeError:
