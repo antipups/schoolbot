@@ -650,7 +650,7 @@ def create_grade(grade_id):
     if len(cursor.fetchall()) != 0:
         return False
     school_id = dict_of_data.get('school_id')
-    new_grade = 'Новый класс'
+    new_grade = 'Новый класс'       #
     # вводим новый класс в бд, поля new_grade позже буду заполненным инфой от админа
     cursor.execute('INSERT INTO grades (school_id, number_grade, grade_id, '
                    'photo_teacher, name_of_teacher, invite_url, bulletin_board) '
