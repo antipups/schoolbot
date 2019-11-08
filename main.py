@@ -15,6 +15,7 @@ bot = telebot.TeleBot(data.TOKEN)
 def command_start(message):
     chat_id = message.from_user.id
     number_of_ad = str(random.randint(1, 5))
+    print(data.get_res('картинка' + number_of_ad))
     with open(data.get_res('картинка' + number_of_ad), 'rb') as f:
         bot.send_photo(chat_id, f.read())  # получение второго банера рекламы
     bot.send_message(chat_id, data.get_res('реклама' + number_of_ad))  # получение текста рекламы
@@ -356,6 +357,8 @@ def teacher_edit_class(message):
     bot.send_message(chat_id, ls_of_marks, parse_mode='Markdown')
     # получаем всех учеников и выводим их списком
     markup = types.InlineKeyboardMarkup()
+    data.dict_of_data['magazine'] = magazine
+    print(magazine)
     for i in magazine:
         markup.add(types.InlineKeyboardButton(text=i[i.find(':') + 1:], callback_data=i[:i.find(':')]))
     bot.send_message(chat_id, 'Список учеников :', reply_markup=markup)
@@ -440,11 +443,14 @@ def accept(message):    # установка оценки,
         return
     if data.set_mark(message.text):
         bot.send_message(chat_id, '{} - {}.'.format(data.dict_of_data.get('name'), message.text))
-        if data.dict_of_data.get('login').find('к') > -1:
-            bot.send_message(chat_id, 'Выберите действие:', reply_markup=action_for_class())
-        else:
-            bot.send_message(chat_id, 'Выберите действие:', reply_markup=action())
-
+        # if data.dict_of_data.get('login').find('к') > -1:
+        #     bot.send_message(chat_id, 'Выберите действие:', reply_markup=action_for_class())
+        # else:
+        #     bot.send_message(chat_id, 'Выберите действие:', reply_markup=action())
+        markup = types.InlineKeyboardMarkup()
+        for i in data.magazine():
+            markup.add(types.InlineKeyboardButton(text=i[i.find(':') + 1:], callback_data=i[:i.find(':')]))
+        bot.send_message(chat_id, 'Список учеников :', reply_markup=markup)
     else:
         msg = bot.send_message(chat_id, 'Оценка не установлена, введите число:')
         bot.register_next_step_handler(msg, accept)
@@ -1124,7 +1130,7 @@ def set_desk2(message):
 
 
 def edit_admin():   # клавиатурка админа
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
     markup.add(types.KeyboardButton(text='Реклама'))
     markup.add(types.KeyboardButton(text='Школа'),
                types.KeyboardButton(text='Класс.'))

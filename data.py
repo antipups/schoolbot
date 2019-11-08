@@ -11,7 +11,8 @@ dict_of_data = {'login': '0', 'password': '0', 'grade': '0',
                 'school_id': '0', 'grade_id': '0', 'name': '0',
                 'stud_id': [], 'last_stud_id': '0', 'ad': '0',
                 'subject': '0', 'student': '0', 'old_subject': '0',
-                'day': '0', 'new_timetable': '0', 'subjects': '0'}   # словарь с аудентификаторными данными
+                'day': '0', 'new_timetable': '0', 'subjects': '0',
+                'magazine': []}   # словарь с аудентификаторными данными
 cancel_word = 'отмена'
 back_word = 'Назад в админ. меню'
 dict_of_admins = {704369002: "1",
@@ -278,14 +279,14 @@ def magazine():
     # функция на получение учеников по заданному предмету
     # + прибавление балов за вход в меню выставления оценок
     login, grade = dict_of_data.get('login'), dict_of_data.get('grade')
-    cursor.execute('SELECT score FROM teachers WHERE school_id = "{}" AND teacher_id = "{}"'.format(login[:3], login[3:]))
-    tmp = cursor.fetchall()[0][0]
-    if tmp is None:
-        tmp = 1
-    else:
-        tmp = str(int(tmp) + 1)
-    cursor.execute('UPDATE teachers SET score = "{}" WHERE '
-                   'school_id = "{}" AND teacher_id = "{}"'.format(tmp, login[:3], login[3:]))
+    # cursor.execute('SELECT score FROM teachers WHERE school_id = "{}" AND teacher_id = "{}"'.format(login[:3], login[3:]))
+    # tmp = cursor.fetchall()[0][0]
+    # if tmp is None:
+    #     tmp = 1
+    # else:
+    #     tmp = str(int(tmp) + 1)
+    # cursor.execute('UPDATE teachers SET score = "{}" WHERE '
+    #                'school_id = "{}" AND teacher_id = "{}"'.format(tmp, login[:3], login[3:]))
     # прибавляем балл, за то что зашел в журнал
     conn.commit()
     cursor.execute('SELECT grade_id FROM grades WHERE '
@@ -312,6 +313,15 @@ def set_mark(mark):
     if not mark.isdigit():
         return False
     login, grade = dict_of_data.get('login'), dict_of_data.get('grade')
+    cursor.execute('SELECT score FROM teachers WHERE school_id = "{}" AND teacher_id = "{}"'.format(login[:3], login[3:]))
+    tmp = cursor.fetchall()[0][0]
+    if tmp is None:
+        tmp = 1
+    else:
+        tmp = str(int(tmp) + 1)
+    cursor.execute('UPDATE teachers SET score = "{}" WHERE '
+                   'school_id = "{}" AND teacher_id = "{}"'.format(tmp, login[:3], login[3:]))
+    # добавление бала при установке оценки
     try:
         cursor.execute('SELECT grade_id FROM grades '  # получаем айди класса, из его номера
                        'WHERE school_id = "{}" AND number_grade = "{}"'.format(login[:3], grade))
