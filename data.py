@@ -1030,7 +1030,7 @@ def import_timetable(new_timetable):
     return failure_result
 
 
-def export_students():  #
+def export_students():  ##
     cursor.execute('SELECT * FROM students WHERE school_id = "{}"'.format(dict_of_data.get('school_id')))
     result = cursor.fetchall()
     if result:
