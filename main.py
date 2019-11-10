@@ -15,7 +15,6 @@ bot = telebot.TeleBot(data.TOKEN)
 def command_start(message):
     chat_id = message.from_user.id
     number_of_ad = str(random.randint(1, 5))
-    print(data.get_res('картинка' + number_of_ad))
     with open(data.get_res('картинка' + number_of_ad), 'rb') as f:
         bot.send_photo(chat_id, f.read())  # получение второго банера рекламы
     bot.send_message(chat_id, data.get_res('реклама' + number_of_ad))  # получение текста рекламы
@@ -323,7 +322,6 @@ def change_homework_class(message):     # меняем дз будучи кла�
     if message.text.lower() == data.cancel_word:
         bot.send_message(chat_id, 'Операция отменена.')
         return
-    print('sex')
     new_task = data.change_homework_for_class(message.text)
     bot.send_message(chat_id, new_task)
     bot.send_message(chat_id, 'Выберите действие:', reply_markup=action_for_class())
@@ -358,7 +356,7 @@ def teacher_edit_class(message):
     # получаем всех учеников и выводим их списком
     markup = types.InlineKeyboardMarkup()
     data.dict_of_data['magazine'] = magazine
-    print(magazine)
+    magazine = sorted(magazine, key=lambda x: x[7:x.find('.')])
     for i in magazine:
         markup.add(types.InlineKeyboardButton(text=i[i.find(':') + 1:], callback_data=i[:i.find(':')]))
     bot.send_message(chat_id, 'Список учеников :', reply_markup=markup)
@@ -1340,7 +1338,6 @@ def export_subjects(message):
     if subjects:
         subjects = [x[0] for x in subjects]
         subjects = '\n'.join(subjects)
-        print(subjects)
         with open('subjects.txt', 'w') as f:
             f.write(subjects)
         with open('subjects.txt', 'rb') as f:

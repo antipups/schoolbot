@@ -236,7 +236,6 @@ def get_marks(id):
             dict_of_temp[i[0]] += ', ' + i[1]
     for i in dict_of_temp.items():
         marks += '_' + i[0].capitalize() + '_ : ' + ','.join(i[1:]) + '\n'
-    # print(dict_of_temp)
     return marks
 
 
@@ -479,13 +478,6 @@ def new_teacher_subj(subj):
     if len(subj) > 31:
         return False
     login = dict_of_data.get('login')
-    # cursor.execute('SELECT name_of_subject FROM teachers '    # на создание клона
-    #                'WHERE name_of_subject = "{}" AND school_id = "{}"'.format(subj, login[:3]))
-    # проверяем нет ли такого же учителя уже, если есть, запрещаем создавать клона
-    # print(cursor.fetchall())
-    # exit()
-    # if cursor.fetchall():
-    #     return False
     cursor.execute('UPDATE teachers SET name_of_subject = "{}" WHERE teacher_id = "{}"'
                    ' AND school_id = "{}"'.format(subj, login[3:], login[:3]))
     conn.commit()
@@ -895,7 +887,6 @@ def delete_grade():
 
 
 def import_stud(new_students):
-    # print(new_students)
     failure_result = ''
     while new_students.find(', ') > -1:  # цикл бежит по строкам
         school_id = new_students[:new_students.find(', ')]  # получаем скул id
@@ -1042,7 +1033,6 @@ def import_timetable(new_timetable):
 def export_students():
     cursor.execute('SELECT * FROM students WHERE school_id = "{}"'.format(dict_of_data.get('school_id')))
     result = cursor.fetchall()
-    print(result)
     if result:
         temp_ls = []  # для помещения туда одного ученика
         all_temp_ls = []  # для помещения туда всех учеников
@@ -1096,6 +1086,7 @@ def get_grade_marks():  # получение оценок класса зада�
     if dict_of_data.get('subject') == '0' and login.find('к') == -1:
         cursor.execute('SELECT name_of_subject FROM teachers WHERE school_id = "{}" AND teacher_id = "{}"'.format(school_id, dict_of_data.get('login')[3:]))    # получаем предмет учителя
         subject = cursor.fetchall()[0][0]
+    list_of_students = sorted(list(list_of_students), key=lambda x: x[2])
     for i in list_of_students:
         result += '\n_' + i[2][:i[2].find(' ') + 2] + '._ : '
         for j in list_of_marks:
@@ -1173,10 +1164,8 @@ def get_all_subjects():
 
 def get_all_subjects_for_teacher():
     cursor.execute('SELECT grade_id FROM grades WHERE number_grade = "{}" AND school_id = "{}"'.format(dict_of_data.get('login')[4:], dict_of_data.get('login')[:3]))
-    # print(dict_of_data.get('login')[4:], cursor.fetchall())
     try:
         dict_of_data['grade_id'] = cursor.fetchall()[0][0]
-        # print(dict_of_data.get('grade_id'))
     except IndexError:
         return None
     cursor.execute('SELECT subject FROM grades_with_subjects WHERE school_id = "{}" AND'
