@@ -278,15 +278,6 @@ def magazine():
     # функция на получение учеников по заданному предмету
     # + прибавление балов за вход в меню выставления оценок
     login, grade = dict_of_data.get('login'), dict_of_data.get('grade')
-    # cursor.execute('SELECT score FROM teachers WHERE school_id = "{}" AND teacher_id = "{}"'.format(login[:3], login[3:]))
-    # tmp = cursor.fetchall()[0][0]
-    # if tmp is None:
-    #     tmp = 1
-    # else:
-    #     tmp = str(int(tmp) + 1)
-    # cursor.execute('UPDATE teachers SET score = "{}" WHERE '
-    #                'school_id = "{}" AND teacher_id = "{}"'.format(tmp, login[:3], login[3:]))
-    # прибавляем балл, за то что зашел в журнал
     conn.commit()
     cursor.execute('SELECT grade_id FROM grades WHERE '
                    'school_id = "{}" AND number_grade = "{}"'.format(login[:3], grade))
@@ -1162,6 +1153,11 @@ def get_all_subjects():
     return cursor.fetchall()
 
 
+def get_subjects_for_one_grade():
+    cursor.execute('SELECT subject FROM grades_with_subjects WHERE school_id = "{}" AND grade_id = "{}"'.format(dict_of_data.get('school_id'), dict_of_data.get('grade_id')))
+    return cursor.fetchall()
+
+
 def get_all_subjects_for_teacher():
     cursor.execute('SELECT grade_id FROM grades WHERE number_grade = "{}" AND school_id = "{}"'.format(dict_of_data.get('login')[4:], dict_of_data.get('login')[:3]))
     try:
@@ -1285,6 +1281,8 @@ def set_score(new_score):
         cursor.execute('UPDATE teachers SET score = "{}" WHERE school_id = "{}" AND teacher_id = "{}"'.format(new_score, dict_of_data.get('login')[:3], dict_of_data.get('login')[3:]))
     except pymysql.err.DataError:
         return 'Введенное значение слишком велико, введите до 10-ти символов.'
+    except pymysql.err.ProgrammingError:
+        return 'Введен запрещенный символ, попробуйте ещё раз.'
     conn.commit()
     return 'Кол-во баллов успешно изменено'
 

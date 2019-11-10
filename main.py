@@ -558,6 +558,17 @@ def pre_change_tt(message):  # функция для ввода дня изме�
     bot.register_next_step_handler(msg, pre_change_tt2)
 
 
+def grade_subjects_for_timetable():
+    result = data.get_subjects_for_one_grade()
+    if result:  # если предметы есть,
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
+        for i in result:
+            markup.add(types.KeyboardButton(text=i[0]))
+        markup.add(types.KeyboardButton(text=data.back_word))
+        return markup
+    return False
+
+
 def pre_change_tt2(message):  # функция для ввода расписания
     chat_id = message.from_user.id
     if message.text == data.back_word:
@@ -574,7 +585,7 @@ def pre_change_tt2(message):  # функция для ввода расписа�
     data.dict_of_data['day'] = message.text
     msg = bot.send_message(chat_id, 'Старое расписание на {} уничтожено, '
                                     'выберите предметы для нового рассписания на этот день:'.format(data.dict_of_data.get('day')),
-                           reply_markup=keyboard_of_subjects_for_admin())
+                           reply_markup=grade_subjects_for_timetable())
     # ввод нового расписания, символ разделитель это для
     # смещение коретки на некст строку
     bot.register_next_step_handler(msg, change_tt)
