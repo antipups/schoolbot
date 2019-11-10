@@ -1280,5 +1280,14 @@ def return_subjects_of_grade():
     return cursor.fetchall()
 
 
+def set_score(new_score):
+    try:
+        cursor.execute('UPDATE teachers SET score = "{}" WHERE school_id = "{}" AND teacher_id = "{}"'.format(new_score, dict_of_data.get('login')[:3], dict_of_data.get('login')[3:]))
+    except pymysql.err.DataError:
+        return 'Введенное значение слишком велико, введите до 10-ти символов.'
+    conn.commit()
+    return 'Кол-во баллов успешно изменено'
+
+
 if __name__ == '__main__':
     pass

@@ -102,6 +102,9 @@ def callback(obj):
         msg = bot.send_message(chat_id, 'Введите домашнее задание:')
         bot.register_next_step_handler(msg, change_homework_class)
 
+    elif obj.data == 'score':  # выбор дз для изменения
+        bot.register_next_step_handler(bot.send_message(chat_id, 'Введите желаемое кол-во баллов:'), set_score)
+
     elif obj.data == 'ro_class':  # выбор дз для изменения
         bot.delete_message(chat_id, obj.message.message_id)
         teacher_edit_class(obj)
@@ -632,7 +635,8 @@ def buttons_of_teacher():  # клавиатурка для игры с учит�
                types.InlineKeyboardButton(text='Сменить id', callback_data='tid'))
     markup.add(types.InlineKeyboardButton(text='Сменить пароль', callback_data='cp'),
                types.InlineKeyboardButton(text='Сменить предмет', callback_data='sub'))
-    markup.add(types.InlineKeyboardButton(text='Удалить', callback_data='td'))
+    markup.add(types.InlineKeyboardButton(text='Изменить кол-во баллов', callback_data='score'),
+               types.InlineKeyboardButton(text='Удалить', callback_data='td'))
     return markup
 
 
@@ -1393,6 +1397,14 @@ def remove_subject_in_grade(message):
     data.remove_subject_in_grade(message.text)
     bot.register_next_step_handler(bot.send_message(chat_id, 'Предмет удален, если хотите продолжить, '
                                                              'вводите предметы или жмите *Назад*'), remove_subject_in_grade)
+
+
+def set_score(message):
+    chat_id = message.from_user.id
+    if message.text == data.back_word:
+        bot.send_message(chat_id, 'Операция отменена.', reply_markup=choose())
+        return
+    bot.send_message(chat_id, data.set_score(message.text))
 
 
 @bot.message_handler(content_types=['text'])
