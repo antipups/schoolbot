@@ -15,7 +15,11 @@ bot = telebot.TeleBot(data.TOKEN)
 def command_start(message):
     chat_id = message.from_user.id
     number_of_ad = str(random.randint(1, 5))
-    with open(data.get_res('картинка' + number_of_ad), 'rb') as f:
+    pic = data.get_res('картинка' + number_of_ad)
+    if pic.find('Ошибка') > -1:
+        bot.send_message(chat_id, pic)
+        return
+    with open(pic, 'rb') as f:
         bot.send_photo(chat_id, f.read())  # получение второго банера рекламы
     bot.send_message(chat_id, data.get_res('реклама' + number_of_ad))  # получение текста рекламы
     bot.send_message(chat_id, '🏫 Школы учавствующие в проекте 🏫\n' + data.get_list_of_schools())
@@ -51,7 +55,11 @@ def second_step(message):
         bot.send_message(chat_id, 'Операция отменена.', reply_markup=cancel_key())
         return
     number_of_ad = str(random.randint(1, 5))
-    with open(data.get_res('картинка' + number_of_ad), 'rb') as f:
+    pic = data.get_res('картинка' + number_of_ad)
+    if pic.find('Ошибка') > -1:
+        bot.send_message(chat_id, pic)
+        return
+    with open(pic, 'rb') as f:
         bot.send_photo(chat_id, f.read())  # получение второго банера рекламы
     bot.send_message(chat_id, data.get_res('реклама' + number_of_ad))  # получение второго текста рекламы
 
@@ -207,7 +215,11 @@ def person_room(message):   # комната школьника
         return
     bot.send_message(chat_id, marks, parse_mode='Markdown')   # выводим оценки
     number_of_ad = str(random.randint(1, 5))
-    with open(data.get_res('картинка' + number_of_ad), 'rb') as f:
+    pic = data.get_res('картинка' + number_of_ad)
+    if pic.find('Ошибка') > -1:
+        bot.send_message(chat_id, pic)
+        return
+    with open(pic, 'rb') as f:
         bot.send_photo(chat_id, f.read())  # получение второго банера рекламы
     bot.send_message(chat_id, data.get_res('реклама' + number_of_ad ))  # получение текста рекламы
 

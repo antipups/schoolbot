@@ -24,6 +24,8 @@ def get_res(text):   # для получения рекламы
     for i in cursor.fetchall():
         if text == i[0]:
             return i[1]
+    else:
+        return 'Ошибка, нет картинки, ключ - ' + text
 
 
 def get_list_of_schoold_for_admin():    # вывод школ для админа, назва + id
